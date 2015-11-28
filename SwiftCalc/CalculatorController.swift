@@ -13,13 +13,14 @@ public class CalculatorController: UIViewController {
     var calculator = RPNCalculator()
     
     let numberFormatter = NSNumberFormatter()
-
+    let displayPlaceholderText = " "
+    
     @IBOutlet weak var display: UILabel!
     
     var displayValue: Double? {
         get {
             if let displayText = display.text {
-                return numberFormatter.numberFromString(displayText)!.doubleValue
+                return numberFormatter.numberFromString(displayText)?.doubleValue
             } else {
                 return nil
             }
@@ -30,8 +31,8 @@ public class CalculatorController: UIViewController {
                 programDisplay.text = calculator.description + " ="
             } else {
                 // preserve layout height of display if new value is nil
-                display.text = " "
-                programDisplay.text = calculator.stackDepth > 0 ? calculator.description + " =" : " "
+                display.text = displayPlaceholderText
+                programDisplay.text = calculator.stackDepth > 0 ? calculator.description + " =" : displayPlaceholderText
             }
         }
     }
@@ -86,6 +87,18 @@ public class CalculatorController: UIViewController {
         pushOperand()
     }
     
+    @IBAction public func storeVariablePressed(sender: UIButton) {
+        let buttonTitle = sender.currentTitle!
+        let symbol = buttonTitle.substringFromIndex(buttonTitle.startIndex.successor())
+        calculator.variable[symbol] = displayValue ?? 0
+        _operandInput = ""
+        displayValue = calculator.evaluate()
+    }
+    
+    @IBAction public func useVariablePressed(sender: UIButton) {
+        let symbol = sender.currentTitle!
+        displayValue = calculator.pushOperand(symbol)
+    }
     
     @IBAction public func constantPressed(sender: UIButton) {
         pushOperand()

@@ -117,6 +117,7 @@ public class RPNCalculator {
     */
     public func clear() {
         stack.removeAll(keepCapacity: true)
+        variable.removeAll()
     }
     
     /**

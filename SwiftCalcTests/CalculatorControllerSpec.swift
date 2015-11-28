@@ -183,6 +183,82 @@ class CalculatorControllerSpec: QuickSpec {
                 }
             }
         }
+        
+        context("variable") {
+            let variableSymbol = "x"
+            
+            it("stores 0 if the stack is empty") {
+                inputStoreVariable(controller, symbol: variableSymbol)
+                expect(display.text) == "0.0"
+                
+                // When the variable is used
+                inputUseVariable(controller, symbol: variableSymbol)
+                
+                // Then the stored value is recalled
+                expect(programDisplay.text) == "\(variableSymbol) ="
+                expect(display.text) == "0.0"
+            }
+            it("stores current operand input as the variable") {
+                // Given an empty stack
+                // And the operand input
+                let operand = "1.1"
+                inputOperand(controller, fromString: operand)
+                
+                inputStoreVariable(controller, symbol: variableSymbol)
+                
+                // Then the operand input is cleared
+                expect(controller.operandInput).to(beEmpty())
+                expect(display.text) == "0.0"
+                
+                // When the variable is used
+                inputUseVariable(controller, symbol: variableSymbol)
+                
+                // Then the stored value is recalled
+                expect(programDisplay.text) == variableSymbol + " ="
+                expect(display.text) == operand
+            }
+            it("stores current stack value as the variable") {
+                // Given the value on the stack and no pending operand
+                let operand = "0.707"
+                inputOperand(controller, fromString: operand)
+                controller.enterPressed()
+                
+                // When the variable is stored
+                inputStoreVariable(controller, symbol: variableSymbol)
+                
+                // Then the operand is left on the top of the stack
+                expect(programDisplay.text) == operand + " ="
+                expect(display.text) == operand
+                
+                // When the variable is used
+                inputUseVariable(controller, symbol: variableSymbol)
+                
+                // Then the stored value is recalled
+                expect(programDisplay.text) == "\(operand), \(variableSymbol) ="
+                expect(display.text) == operand
+            }
+            context("is used in an expression before a value is stored") {
+                let operand0 = "7.0"
+                beforeEach {
+                    inputOperand(controller, fromString: operand0)
+                    controller.enterPressed()
+                    inputUseVariable(controller, symbol: variableSymbol)
+                    inputOperation(controller, operation: RPNCalculator.Operator.Add)
+                }
+                it("the expression has no value") {
+                    expect(programDisplay.text) == "\(operand0) + \(variableSymbol) ="
+                    expect(display.text) == " "
+                }
+                it("the expression has a value when a value is stored") {
+                    let operand1 = "9"
+                    inputOperand(controller, fromString: operand1)
+                    inputStoreVariable(controller, symbol: variableSymbol)
+                    
+                    expect(programDisplay.text) == "\(operand0) + \(variableSymbol) ="
+                    expect(display.text) == "16.0"
+                }
+            }
+        }
     }
 }
 
@@ -212,6 +288,22 @@ func inputOperation(controller: CalculatorController, operation: String) {
         let button = UIButton()
         button.setTitle(operation, forState: UIControlState.Normal)
         controller.operationPressed(button)
+    }
+}
+
+func inputStoreVariable(controller: CalculatorController, symbol: String) {
+    if !symbol.isEmpty {
+        let button = UIButton()
+        button.setTitle("→" + symbol, forState: UIControlState.Normal)
+        controller.storeVariablePressed(button)
+    }
+}
+
+func inputUseVariable(controller: CalculatorController, symbol: String) {
+    if !symbol.isEmpty {
+        let button = UIButton()
+        button.setTitle(symbol, forState: UIControlState.Normal)
+        controller.useVariablePressed(button)
     }
 }
 

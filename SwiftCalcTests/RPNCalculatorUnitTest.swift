@@ -123,12 +123,16 @@ class RPNCalculatorUnitTest: XCTestCase {
     func testClear() {
         let calculator = RPNCalculator()
         given(calculator, withInput: [Operand(1.1), Operand(5)])
+        let variableSymbol = "x"
+        let variableValue = 9.6
+        calculator.variable[variableSymbol] = variableValue
         
         calculator.clear()
         
         expect(calculator.stackDepth) == 0
         expect(calculator.evaluate()) == 0
         expect(calculator.description) == ""
+        expect(calculator.variable[variableSymbol]).to(beNil())
     }
     
     func testPushOperandValue() {
