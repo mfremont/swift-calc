@@ -15,9 +15,11 @@ import SwiftCalc
 
 class CalculatorControllerSpec: QuickSpec {
     override func spec() {
+        let displayPlaceholderText = " "
         var controller: CalculatorController!
         var display: UILabel!
         var programDisplay: UILabel!
+        
         beforeEach {
             let storyboard = UIStoryboard(name: "Main", bundle: NSBundle.mainBundle())
             controller = storyboard.instantiateViewControllerWithIdentifier("CalculatorControllerID") as! CalculatorController
@@ -47,14 +49,6 @@ class CalculatorControllerSpec: QuickSpec {
                     
                     expect(controller.operandInput) == "-999"
                     expect(display.text) == "-999"
-                }
-            }
-            context("when clear is pressed") {
-                it("clears the display and operand") {
-                    controller.clearPressed()
-                    
-                    expect(display.text) == " "
-                    expect(controller.operandInput) == ""
                 }
             }
         }
@@ -89,7 +83,7 @@ class CalculatorControllerSpec: QuickSpec {
                 it("no result is displayed and the input operand is consumed") {
                     inputOperation(controller, operation: RPNCalculator.Operator.Multiply)
                     
-                    expect(display.text) == " "
+                    expect(display.text) == displayPlaceholderText
                     expect(controller.operandInput) == ""
                     expect(programDisplay.text) == "? × 1.0 ="
                 }
@@ -247,7 +241,7 @@ class CalculatorControllerSpec: QuickSpec {
                 }
                 it("the expression has no value") {
                     expect(programDisplay.text) == "\(operand0) + \(variableSymbol) ="
-                    expect(display.text) == " "
+                    expect(display.text) == displayPlaceholderText
                 }
                 it("the expression has a value when a value is stored") {
                     let operand1 = "9"
@@ -256,6 +250,72 @@ class CalculatorControllerSpec: QuickSpec {
                     
                     expect(programDisplay.text) == "\(operand0) + \(variableSymbol) ="
                     expect(display.text) == "16.0"
+                }
+            }
+        }
+        
+        context("clear") {
+            context("given input operand") {
+                let operand = "1.111"
+                beforeEach {
+                    inputOperand(controller, fromString: operand)
+                }
+                
+                it("press removes last digit input") {
+                    let expectedInputOperand = operand.substringToIndex(operand.endIndex.predecessor())
+                    controller.clearPressed()
+                    
+                    expect(controller.operandInput) == expectedInputOperand
+                    expect(programDisplay.text) == displayPlaceholderText
+                    expect(display.text) == expectedInputOperand
+                }
+                it("press does not remove anything from the stack") {
+                    controller.enterPressed()
+                    inputOperand(controller, fromString: "1")
+
+                    controller.clearPressed()
+                    controller.clearPressed()
+                    
+                    expect(display.text) == operand
+                    expect(programDisplay.text) == operand + " ="
+                }
+                it("double-tap clears input and re-evaluates") {
+                    controller.enterPressed()
+                    inputOperand(controller, fromString: "9.9")
+                    
+                    let simulatedRecognizer = UITapGestureRecognizer()
+                    controller.clearTapGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == operand + " ="
+                    expect(display.text) == operand
+                    expect(controller.operandInput).to(beEmpty())
+                }
+                it("long press clears the stack, display, and operand") {
+                    controller.enterPressed()
+                    
+                    let simulatedRecognizer = UILongPressGestureRecognizer()
+                    controller.clearLongPressGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == displayPlaceholderText
+                    expect(display.text) == displayPlaceholderText
+                    expect(controller.operandInput) == ""
+                }
+            }
+            
+            context("given the operands") {
+                it("double-tap clears the last operand on the stack") {
+                    let operand0 = "0.707"
+                    let operand1 = "1.212"
+                    inputOperand(controller, fromString: operand0)
+                    controller.enterPressed()
+                    inputOperand(controller, fromString: operand1)
+                    controller.enterPressed()
+                    
+                    let simulatedRecognizer = UITapGestureRecognizer()
+                    controller.clearTapGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == operand0 + " ="
+                    expect(display.text) == operand0
                 }
             }
         }

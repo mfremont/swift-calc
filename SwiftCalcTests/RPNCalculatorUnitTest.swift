@@ -135,6 +135,38 @@ class RPNCalculatorUnitTest: XCTestCase {
         expect(calculator.variable[variableSymbol]).to(beNil())
     }
     
+    func testRemoveLast() {
+        let calculator = RPNCalculator()
+        given(calculator, withInput: [Operand(1.1), Operand(5)])
+        
+        calculator.removeLast()
+        
+        expect(calculator.stackDepth) == 1
+        expect(calculator.evaluate()).to(beCloseTo(1.1, within: 1e-10))
+        expect(calculator.description) == "1.1"
+    }
+
+    func testRemoveLastOneOperand() {
+        let calculator = RPNCalculator()
+        given(calculator, withInput: [Operand(1.1)])
+        
+        calculator.removeLast()
+        
+        expect(calculator.stackDepth) == 0
+        expect(calculator.evaluate()) == 0
+        expect(calculator.description) == ""
+    }
+    
+    func testRemoveLastEmptyStack() {
+        let calculator = RPNCalculator()
+        
+        calculator.removeLast()
+        
+        expect(calculator.stackDepth) == 0
+        expect(calculator.evaluate()) == 0
+        expect(calculator.description) == ""
+    }
+    
     func testPushOperandValue() {
         let calculator = RPNCalculator()
 

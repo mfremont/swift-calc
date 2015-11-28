@@ -162,6 +162,15 @@ public class RPNCalculator {
     }
 
     /**
+     Removes the last (topmost) entry from the stack.
+     */
+    public func removeLast() {
+        if !stack.isEmpty {
+            stack.removeLast()
+        }
+    }
+    
+    /**
      Evaluates the stack.
      
      - returns: the result of evaluating the stack, 0 if the stack is empty, or `nil` if the stack cannot be evaluated.

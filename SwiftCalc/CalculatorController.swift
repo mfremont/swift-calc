@@ -20,7 +20,7 @@ public class CalculatorController: UIViewController {
     var displayValue: Double? {
         get {
             if let displayText = display.text {
-                return numberFormatter.numberFromString(displayText)?.doubleValue
+                return doubleFromString(displayText)
             } else {
                 return nil
             }
@@ -28,11 +28,14 @@ public class CalculatorController: UIViewController {
         set {
             if newValue != nil {
                 display.text = String(newValue!)
-                programDisplay.text = calculator.description + " ="
             } else {
                 // preserve layout height of display if new value is nil
                 display.text = displayPlaceholderText
-                programDisplay.text = calculator.stackDepth > 0 ? calculator.description + " =" : displayPlaceholderText
+            }
+            if calculator.stackDepth > 0 {
+                programDisplay.text = calculator.description + " ="
+            } else {
+                programDisplay.text = displayPlaceholderText
             }
         }
     }
@@ -49,23 +52,23 @@ public class CalculatorController: UIViewController {
         }
     }
     
-    @IBAction public func backspacePressed() {
+    @IBAction public func clearTapGesture(sender: UITapGestureRecognizer) {
         if !operandInput.isEmpty {
-            _operandInput.removeAtIndex(operandInput.endIndex.predecessor())
-            if !operandInput.isEmpty {
-                display.text = operandInput
-            } else {
-                displayValue = calculator.evaluate()
-            }
+            clearOperandInput()
+        } else {
+            calculator.removeLast()
         }
+        displayValue = calculator.evaluate()
     }
-
+    
     @IBAction public func clearPressed() {
-        calculator.clear()
-        _operandInput = ""
-        displayValue = nil
+        removeOperandInputLast()
     }
 
+    @IBAction public func clearLongPressGesture(sender: UILongPressGestureRecognizer) {
+        clearAll()
+    }
+   
     @IBAction public func decimalPointPressed() {
         if operandInput.isEmpty {
             _operandInput = "0."
@@ -91,7 +94,7 @@ public class CalculatorController: UIViewController {
         let buttonTitle = sender.currentTitle!
         let symbol = buttonTitle.substringFromIndex(buttonTitle.startIndex.successor())
         calculator.variable[symbol] = displayValue ?? 0
-        _operandInput = ""
+        clearOperandInput()
         displayValue = calculator.evaluate()
     }
     
@@ -128,16 +131,43 @@ public class CalculatorController: UIViewController {
     }
     
     /**
+     Clears the calculator model, operand input, and display.
+     */
+    func clearAll() {
+        calculator.clear()
+        clearOperandInput()
+        displayValue = nil
+    }
+    
+    /**
+     Clears the operand input buffer.
+     */
+    func clearOperandInput() {
+        _operandInput.removeAll()
+    }
+
+    func removeOperandInputLast() {
+        if !operandInput.isEmpty {
+            _operandInput.removeAtIndex(operandInput.endIndex.predecessor())
+            if !operandInput.isEmpty {
+                display.text = operandInput
+            } else {
+                displayValue = calculator.evaluate()
+            }
+        }
+    }
+    
+    /**
      Pushes the current operand input onto the calculator stack and updates the display. This is a
      no-op if the operand input is empty.
      */
     func pushOperand() {
         if let operand = doubleFromString(_operandInput) {
             displayValue = calculator.pushOperand(operand)
-            _operandInput = ""
+            clearOperandInput()
         }
     }
-
+        
     /**
      Pushes the current operand input onto the calculator stack, followed by the symbolic value,
      and updates the display.
@@ -145,7 +175,7 @@ public class CalculatorController: UIViewController {
     func pushOperand(value: Double, withSymbol symbol: String) {
         displayValue = calculator.pushOperand(value, withSymbol: symbol)
     }
-    
+
     /**
      Pushes the current operand input followed by the operator onto the calculator stack.
      */
@@ -162,4 +192,3 @@ public class CalculatorController: UIViewController {
         return numberFormatter.numberFromString(s)?.doubleValue
     }
 }
-
