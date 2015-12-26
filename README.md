@@ -71,3 +71,14 @@ input is empty; with empty input, it is a no-op.
 2. Double-tap will clear the input operand; if there is no input operand it will remove the topmost
 entry on the stack.
 3. Long press clears the calculator: input operand, stack, and variables.
+
+#### Error Reporting
+
+I used the error reporting exercise as an opportunity to learn a little about exceptions and 
+internationalization in Swift. `RPNCalculator.evaluate()` returns `nil` if any errors occur during
+evaluation and those errors are reported with the `evaluationErrors` attribute.
+
+Errors are reported in the UI by the `CalculatorController.displayValue` setter. If the new value
+is `nil` then the top-most error in the `evaluationErrors` is used to lookup a localized message
+using `NSLocalizedString(key:comment)` and the main display is updated with the message.
+

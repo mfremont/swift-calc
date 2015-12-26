@@ -112,11 +112,72 @@ class RPNCalculatorUnitTest: XCTestCase {
     func given(calculator: RPNCalculator, withInput input:[CalculatorExpression]) -> [Double?] {
         return input.map { $0.push(calculator) }
     }
-    
+
+    /**
+     Matches the error `VariableNotSet(symbol: expectedSymbol)`.
+     */
+    func beErrorIsVariableNotSet(expectedSymbol: String) -> MatcherFunc<RPNCalculator.EvaluationError> {
+        return MatcherFunc { expression, message in
+            message.postfixMessage = "be VariableNotSet(symbol: \(expectedSymbol))"
+            if let actual = try expression.evaluate(),
+                case let .VariableNotSet(actualSymbol) = actual {
+                    return expectedSymbol == actualSymbol
+            }
+            return false
+        }
+    }
+
+    /**
+     Matches the error `InsufficientOperandsForOperation(symbol: expectedSymbol)`.
+     */
+    func beErrorIsInsufficientOperandsForOperation(expectedSymbol: String) -> MatcherFunc<RPNCalculator.EvaluationError> {
+        return MatcherFunc { expression, message in
+            message.postfixMessage = "be InsufficientOperandsForOperation(symbol: \(expectedSymbol))"
+            if let actual = try expression.evaluate(),
+                case let .InsufficientOperandsForOperation(actualSymbol) = actual {
+                    return expectedSymbol == actualSymbol
+            }
+            return false
+        }
+    }
+
+    /**
+     Matches the error `DivideByZero`.
+     */
+    func beErrorIsDivideByZero() -> MatcherFunc<RPNCalculator.EvaluationError> {
+        return MatcherFunc { expression, message in
+            message.postfixMessage = "be DivideByZero()"
+            let actual = try expression.evaluate()!
+            switch actual {
+                case .DivideByZero:
+                    return true
+                default:
+                    return false
+            }
+        }
+    }
+
+    /**
+     Matches the error `ComplexNumber`.
+     */
+    func beErrorIsComplexNumber() -> MatcherFunc<RPNCalculator.EvaluationError> {
+        return MatcherFunc { expression, message in
+            message.postfixMessage = "be ComplexNumber()"
+            let actual = try expression.evaluate()!
+            switch actual {
+            case .ComplexNumber:
+                return true
+            default:
+                return false
+            }
+        }
+    }
+
     func testInitialEmptyStack() {
         let calculator = RPNCalculator()
         
         expect(calculator.evaluate()) == 0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == ""
     }
     
@@ -128,12 +189,14 @@ class RPNCalculatorUnitTest: XCTestCase {
         calculator.variable[variableSymbol] = variableValue
         
         calculator.clear()
-        
+
         expect(calculator.stackDepth) == 0
         expect(calculator.evaluate()) == 0
         expect(calculator.description) == ""
         expect(calculator.variable[variableSymbol]).to(beNil())
     }
+
+    // TODO: verify that clear() clears errors
     
     func testRemoveLast() {
         let calculator = RPNCalculator()
@@ -154,6 +217,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(calculator.stackDepth) == 0
         expect(calculator.evaluate()) == 0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == ""
     }
     
@@ -164,6 +228,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(calculator.stackDepth) == 0
         expect(calculator.evaluate()) == 0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == ""
     }
     
@@ -175,6 +240,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(result!) == operand
         expect(calculator.evaluate()) == operand
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == String(operand)
     }
     
@@ -187,6 +253,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(result!) == operand
         expect(calculator.evaluate()) == operand
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == operandSymbol
     }
     
@@ -198,6 +265,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(result).to(beNil())
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsVariableNotSet(variableSymbol))
         expect(calculator.description) == variableSymbol
     }
     
@@ -211,6 +279,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(result0).to(beNil())
         expect(calculator.evaluate()) == variableValue
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == variableSymbol
     }
 
@@ -225,6 +294,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         expect(result) == variableValue
         expect(calculator.evaluate()) == variableValue
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == variableSymbol
     }
 
@@ -237,22 +307,26 @@ class RPNCalculatorUnitTest: XCTestCase {
         expect(pushResult.last!) == expected
         // is the same as result of evaluate()
         expect(calculator.evaluate()) == expected
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "2.0 + 3.0"
         
         calculator.clear()
         given(calculator, withInput: [Operand(2), Operand(-3), Add])
         expect(calculator.evaluate()) == -1.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "2.0 + -3.0"
         
         calculator.clear()
         given(calculator, withInput: [Operand(1.1), Operand(0.1), Add])
         // result is sum of two binary appoximations
         expect(calculator.evaluate()).to(beCloseTo(1.2, within: 1e-10))
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "1.1 + 0.1"
         
         calculator.clear()
         given(calculator, withInput: [Operand(969.99), Add])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("+"))
         expect(calculator.description) == "? + 969.99"
     }
     
@@ -261,27 +335,32 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(2), Subtract])
         expect(calculator.evaluate()) == 1.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 - 2.0"
         
         calculator.clear()
         given(calculator, withInput: [Operand(2), Operand(3), Subtract])
         expect(calculator.evaluate()) == -1.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "2.0 - 3.0"
         
         calculator.clear()
         given(calculator, withInput: [Operand(2), Operand(-3), Subtract])
         expect(calculator.evaluate()) == 5.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "2.0 - -3.0"
      
         calculator.clear()
         given(calculator, withInput: [Operand(1.2), Operand(0.1), Subtract])
         // result is a binary approximation
         expect(calculator.evaluate()).to(beCloseTo(1.1, within: 1e-10))
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "1.2 - 0.1"
         
         calculator.clear()
         given(calculator, withInput: [Operand(969.99), Subtract])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("-"))
         expect(calculator.description) == "? - 969.99"
     }
     
@@ -290,17 +369,29 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(2), Divide])
         expect(calculator.evaluate()) == 1.5
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 ÷ 2.0"
         
         calculator.clear()
         given(calculator, withInput: [Operand(6), Operand(-2), Divide])
         expect(calculator.evaluate()) == -3.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "6.0 ÷ -2.0"
 
         calculator.clear()
         given(calculator, withInput: [Operand(0.111), Divide])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("÷"))
         expect(calculator.description) == "? ÷ 0.111"
+    }
+    
+    func testDivisionByZero() {
+        let calculator = RPNCalculator()
+
+        given(calculator, withInput: [Operand(3), Operand(0), Divide])
+        expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsDivideByZero())
+        expect(calculator.description) == "3.0 ÷ 0.0"
     }
     
     func testMultiplication() {
@@ -308,16 +399,19 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(8), Operand(7), Multiply])
         expect(calculator.evaluate()) == 56
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "8.0 × 7.0"
 
         calculator.clear()
         given(calculator, withInput: [Operand(-0.3), Operand(7), Multiply])
         expect(calculator.evaluate()) == -2.1
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "-0.3 × 7.0"
         
         calculator.clear()
         given(calculator, withInput: [Operand(0.111), Multiply])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("×"))
         expect(calculator.description) == "? × 0.111"
     }
     
@@ -326,22 +420,29 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(4), SquareRoot])
         expect(calculator.evaluate()) == 2.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "√(4.0)"
 
         calculator.clear()
         given(calculator, withInput: [Operand(2.2), SquareRoot])
         expect(calculator.evaluate()) == sqrt(2.2)
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "√(2.2)"
-
-        calculator.clear()
-        given(calculator, withInput: [Operand(-3.3), SquareRoot])
-        expect(calculator.evaluate()!.isNaN) == true
-        expect(calculator.description) == "√(-3.3)"
         
         calculator.clear()
         given(calculator, withInput: [SquareRoot])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("√"))
         expect(calculator.description) == "√(?)"
+    }
+
+    func testSquareRootNegativeValue() {
+        let calculator = RPNCalculator()
+
+        given(calculator, withInput: [Operand(-3.3), SquareRoot])
+        expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsComplexNumber())
+        expect(calculator.description) == "√(-3.3)"
     }
     
     func testSin() {
@@ -349,21 +450,25 @@ class RPNCalculatorUnitTest: XCTestCase {
 
         given(calculator, withInput: [Operand(M_PI_2), Sin])
         expect(calculator.evaluate()) == 1.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "sin(\(M_PI_2))"
         
         calculator.clear()
         given(calculator, withInput: [Operand(-M_PI_2), Sin])
         expect(calculator.evaluate()) == -1.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "sin(-\(M_PI_2))"
 
         calculator.clear()
         given(calculator, withInput: [Operand(0), Sin])
         expect(calculator.evaluate()) == 0.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "sin(0.0)"
         
         calculator.clear()
         given(calculator, withInput: [Sin])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("sin"))
         expect(calculator.description) == "sin(?)"
     }
     
@@ -372,21 +477,25 @@ class RPNCalculatorUnitTest: XCTestCase {
 
         given(calculator, withInput: [Operand(M_PI_2), Cos])
         expect(calculator.evaluate()).to(beCloseTo(0.0, within: 1e-10))
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "cos(\(M_PI_2))"
         
         calculator.clear()
         given(calculator, withInput: [Operand(-M_PI_2), Cos])
         expect(calculator.evaluate()).to(beCloseTo(0.0, within: 1e-10))
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "cos(-\(M_PI_2))"
         
         calculator.clear()
         given(calculator, withInput: [Operand(0), Cos])
         expect(calculator.evaluate()) == 1.0
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "cos(0.0)"
         
         calculator.clear()
         given(calculator, withInput: [Cos])
         expect(calculator.evaluate()).to(beNil())
+        expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("cos"))
         expect(calculator.description) == "cos(?)"
     }
 
@@ -395,20 +504,18 @@ class RPNCalculatorUnitTest: XCTestCase {
 
         given(calculator, withInput: [Operand(2), Pi, Multiply])
         expect(calculator.evaluate()) == M_PI * 2
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "2.0 × π"
     }
     
-    func testUndefinedVariable() {
+    func testVariableNotSetInExpression() {
         let calculator = RPNCalculator()
-        
-        given(calculator, withInput: [Variable("x")])
-        expect(calculator.evaluate()).to(beNil())
-        expect(calculator.description) == "x"
-        
-        calculator.clear()
+       
+        let variableSymbol = "x"
         given(calculator, withInput: [Operand(2), Variable("x"), Add])
         expect(calculator.evaluate()).to(beNil())
-        expect(calculator.description) == "2.0 + x"
+        expect(calculator.evaluationErrors[0]).to(beErrorIsVariableNotSet(variableSymbol))
+        expect(calculator.description) == "2.0 + \(variableSymbol)"
     }
     
     func testVariable() {
@@ -425,6 +532,7 @@ class RPNCalculatorUnitTest: XCTestCase {
 
         given(calculator, withInput: [Operand(3), Operand(5), Add, Pi, Cos])
         expect(calculator.evaluate()) == -1
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 + 5.0, cos(π)"
     }
     
@@ -433,6 +541,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(0.02), Operand(0.02), Add, SquareRoot])
         expect(calculator.evaluate()) == 0.2
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "√(0.02 + 0.02)"
     }
 
@@ -441,6 +550,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Operand(1), Add, Add, SquareRoot])
         expect(calculator.evaluate()) == 3
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "√(3.0 + (5.0 + 1.0))"
     }
 
@@ -449,6 +559,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Operand(4), Add, Add])
         expect(calculator.evaluate()) == 12
+        expect(calculator.evaluationErrors).to(beEmpty())
         // addition with binary floating point numbers is not associative when operands differ greatly
         // in magnitude: 
         //   (0.1 + 0.1e-13) + 0.1e-13 != 0.1 + (0.1e-13 + 0.1e-13)
@@ -461,6 +572,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Operand(4), Subtract, Subtract])
         expect(calculator.evaluate()) == 2
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 - (5.0 - 4.0)"
     }
   
@@ -469,6 +581,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Operand(4), Multiply, Multiply])
         expect(calculator.evaluate()) == 60
+        expect(calculator.evaluationErrors).to(beEmpty())
         // multiplication with binary floating point numbers is not associative when operands differ greatly
         // in magnitude:
         //    (1e7 * 1e-7) * 1e-7 != 1e7 * (1e-7 * 1e-7)
@@ -482,6 +595,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Operand(4), Divide, Divide])
         expect(calculator.evaluate()) == 3.0 / (5.0 / 4.0)
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 ÷ (5.0 ÷ 4.0)"
     }
 
@@ -490,6 +604,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Operand(4), Add, Subtract])
         expect(calculator.evaluate()) == -6
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 - (5.0 + 4.0)"
     }
 
@@ -498,6 +613,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         
         given(calculator, withInput: [Operand(3), Operand(5), Add, Operand(4), Subtract])
         expect(calculator.evaluate()) == 4
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "(3.0 + 5.0) - 4.0"
     }
 
@@ -506,6 +622,7 @@ class RPNCalculatorUnitTest: XCTestCase {
     
         given(calculator, withInput: [Operand(3), Operand(5), Operand(4), Add, Multiply])
         expect(calculator.evaluate()) == 27
+        expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 × (5.0 + 4.0)"
     }
 }

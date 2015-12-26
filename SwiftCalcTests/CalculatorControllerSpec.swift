@@ -11,7 +11,7 @@ import UIKit
 import Quick
 import Nimble
 
-import SwiftCalc
+@testable import SwiftCalc
 
 class CalculatorControllerSpec: QuickSpec {
     override func spec() {
@@ -80,12 +80,14 @@ class CalculatorControllerSpec: QuickSpec {
                 }
             }
             context("when multiplication operation is pressed") {
-                it("no result is displayed and the input operand is consumed") {
+                it("error message is displayed and the input operand is consumed") {
                     inputOperation(controller, operation: RPNCalculator.Operator.Multiply)
                     
-                    expect(display.text) == displayPlaceholderText
+                    let expectedErrorMessage = String(format: NSLocalizedString("ErrorInsufficientOperands", comment: ""), RPNCalculator.Operator.Multiply)
+                    expect(display.text) == expectedErrorMessage
+                    expect(display.backgroundColor) == controller.errorBackgroundColor
                     expect(controller.operandInput) == ""
-                    expect(programDisplay.text) == "? × 1.0 ="
+                    expect(programDisplay.text) == "? × 1.0 " + controller.errorSymbol
                 }
             }
         }
@@ -167,15 +169,6 @@ class CalculatorControllerSpec: QuickSpec {
                     expect(programDisplay.text) == initialOperand + " × " + initialOperand + " ="
                 }
             }
-            context("when the square root is requested") {
-                let expectedDisplayText = "nan"
-                it("displays \(expectedDisplayText)") {
-                    inputOperation(controller, operation: RPNCalculator.Operator.SquareRoot)
-                    
-                    expect(display.text) == expectedDisplayText
-                    expect(programDisplay.text) == "√(\(initialOperand)) ="
-                }
-            }
         }
         
         context("variable") {
@@ -231,17 +224,13 @@ class CalculatorControllerSpec: QuickSpec {
                 expect(programDisplay.text) == "\(operand), \(variableSymbol) ="
                 expect(display.text) == operand
             }
-            context("is used in an expression before a value is stored") {
+            context("used in an expression before set") {
                 let operand0 = "7.0"
                 beforeEach {
                     inputOperand(controller, fromString: operand0)
                     controller.enterPressed()
                     inputUseVariable(controller, symbol: variableSymbol)
                     inputOperation(controller, operation: RPNCalculator.Operator.Add)
-                }
-                it("the expression has no value") {
-                    expect(programDisplay.text) == "\(operand0) + \(variableSymbol) ="
-                    expect(display.text) == displayPlaceholderText
                 }
                 it("the expression has a value when a value is stored") {
                     let operand1 = "9"
@@ -316,6 +305,89 @@ class CalculatorControllerSpec: QuickSpec {
                     
                     expect(programDisplay.text) == operand0 + " ="
                     expect(display.text) == operand0
+                }
+            }
+        }
+        
+        context("errors") {
+            context("the square root of -2") {
+                let initialOperand = "-2.0"
+                
+                it("displays the error message") {
+                    inputOperand(controller, fromString: initialOperand)
+                    controller.enterPressed()
+
+                    inputOperation(controller, operation: RPNCalculator.Operator.SquareRoot)
+                    
+                    let expectedExpressionDescription = "√(\(initialOperand)) " + controller.errorSymbol
+                    expect(programDisplay.text) == expectedExpressionDescription
+                    let expectedErrorMessage = NSLocalizedString("ErrorComplexNumber", comment: "")
+                    expect(display.text) == expectedErrorMessage
+                }
+            }
+            context("divide by 0") {
+                it("displays the error message") {
+                    inputOperand(controller, fromString: "5")
+                    controller.enterPressed()
+                    inputOperand(controller, fromString: "0")
+                    controller.enterPressed()
+                    
+                    inputOperation(controller, operation: RPNCalculator.Operator.Divide)
+                    
+                    expect(programDisplay.text) == "5.0 ÷ 0.0 " + controller.errorSymbol
+                    let expectedErrorMessage = NSLocalizedString("ErrorDivideByZero", comment: "")
+                    expect(display.text) == expectedErrorMessage
+                    expect(display.backgroundColor) == controller.errorBackgroundColor
+                }
+            }
+            context("variable not set") {
+                let variableSymbol = "x"
+                
+                context("pushed onto stack by itself") {
+                    it("displays the error message") {
+                        inputUseVariable(controller, symbol: variableSymbol)
+                        
+                        expect(programDisplay.text) == variableSymbol + " " + controller.errorSymbol
+                        let expectedErrorMessage = String(format: NSLocalizedString("ErrorVariableNotSet", comment:""), variableSymbol)
+                        expect(display.text) == expectedErrorMessage
+                    }
+                }
+                context("used in a binary expression") {
+                    let operand0 = "7.0"
+                    beforeEach {
+                        inputOperand(controller, fromString: operand0)
+                        controller.enterPressed()
+                        inputUseVariable(controller, symbol: variableSymbol)
+                        
+                        inputOperation(controller, operation: RPNCalculator.Operator.Add)
+                    }
+                    it("displays the error message") {
+                        expect(programDisplay.text) == "\(operand0) + \(variableSymbol) " + controller.errorSymbol
+                        let expectedErrorMessage = String(format: NSLocalizedString("ErrorVariableNotSet", comment:""), variableSymbol)
+                        expect(display.text) == expectedErrorMessage
+                        expect(display.backgroundColor) == controller.errorBackgroundColor
+                    }
+                    it("clears the error when the variable is set") {
+                        let x = "2.2"
+                        inputOperand(controller, fromString: x)
+                        inputStoreVariable(controller, symbol: variableSymbol)
+                        
+                        expect(display.text) == "9.2"
+                        expect(display.backgroundColor).to(beNil())
+                    }
+                }
+                context("used in a unary expression") {
+                    it("the unary expression has no value") {
+                        inputUseVariable(controller, symbol: variableSymbol)
+                        
+                        inputOperation(controller, operation: RPNCalculator.Operator.SquareRoot)
+                        
+                        
+                        expect(programDisplay.text) == "√(\(variableSymbol)) " + controller.errorSymbol
+                        let expectedErrorMessage = String(format: NSLocalizedString("ErrorVariableNotSet", comment:""), variableSymbol)
+                        expect(display.text) == expectedErrorMessage
+                        expect(display.backgroundColor) == controller.errorBackgroundColor
+                    }
                 }
             }
         }

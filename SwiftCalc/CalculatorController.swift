@@ -11,8 +11,12 @@ import UIKit
 public class CalculatorController: UIViewController {
 
     var calculator = RPNCalculator()
+    let errorSymbol = "⚠️"
+    let errorBackgroundColor = UIColor(red: 1.0, green: 0.95, blue: 0.95, alpha:1.0)
+    var defaultBackgroundColor: UIColor?
     
     let numberFormatter = NSNumberFormatter()
+    // default text to preserve layout height of display label views
     let displayPlaceholderText = " "
     
     @IBOutlet weak var display: UILabel!
@@ -26,14 +30,39 @@ public class CalculatorController: UIViewController {
             }
         }
         set {
+            let evaluationError = !calculator.evaluationErrors.isEmpty
             if newValue != nil {
                 display.text = String(newValue!)
+                display.backgroundColor = defaultBackgroundColor
             } else {
-                // preserve layout height of display if new value is nil
-                display.text = displayPlaceholderText
+                var errorMessage: String?
+                if evaluationError {
+                    // display top-most error
+                    let error = calculator.evaluationErrors[0]
+                    switch error {
+                        case .DivideByZero:
+                            errorMessage = NSLocalizedString("ErrorDivideByZero", comment: "error message: divide by zero")
+                        case .ComplexNumber:
+                            errorMessage = NSLocalizedString("ErrorComplexNumber", comment:  "error message: result is complex number")
+                        case .InsufficientOperandsForOperation(let symbol):
+                            let messageFormat = NSLocalizedString("ErrorInsufficientOperands", comment: "error message: insufficient operands for operation")
+                            errorMessage = String(format: messageFormat, symbol)
+                        case .VariableNotSet(let symbol):
+                            let messageFormat = NSLocalizedString("ErrorVariableNotSet", comment: "error message: variable not set")
+                            errorMessage = String(format: messageFormat, symbol)
+                    }
+                }
+                if errorMessage != nil {
+                    display.text = errorMessage!
+                    display.backgroundColor = errorBackgroundColor
+                } else {
+                    display.text = displayPlaceholderText
+                    display.backgroundColor = defaultBackgroundColor
+                }
             }
+            
             if calculator.stackDepth > 0 {
-                programDisplay.text = calculator.description + " ="
+                programDisplay.text = calculator.description + " " + (evaluationError ? errorSymbol : "=")
             } else {
                 programDisplay.text = displayPlaceholderText
             }
@@ -190,5 +219,9 @@ public class CalculatorController: UIViewController {
      */
     func doubleFromString(s: String) -> Double? {
         return numberFormatter.numberFromString(s)?.doubleValue
+    }
+    
+    override public func viewDidLoad() {
+        defaultBackgroundColor = display.backgroundColor
     }
 }

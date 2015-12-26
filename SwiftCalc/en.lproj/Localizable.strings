@@ -1,0 +1,19 @@
+/* 
+  ErrorMessages.strings
+  SwiftCalc
+
+  Created by Matthew Fremont on 12/12/15.
+  Copyright © 2015 Matthew Fremont. All rights reserved.
+*/
+
+/* error message: result is complex number */
+"ErrorComplexNumber" = "complex number";
+
+/* error message: divide by zero */
+"ErrorDivideByZero" = "division by zero";
+
+/* error message: insufficient operands for operation */
+"ErrorInsufficientOperands" = "too few operands for %@";
+
+/* error message: variable not set */
+"ErrorVariableNotSet" = "variable %@ not set";

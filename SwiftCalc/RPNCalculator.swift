@@ -18,9 +18,9 @@ public class RPNCalculator {
         case Value(Double)
         case Variable(symbol: String)
         case BinaryOperation(symbol: String, associativity: Associativity,
-            evaluate: (Double, Double) -> Double)
+            evaluate: (Double, Double) throws -> Double)
         case UnaryOperation(symbol: String, associativity: Associativity,
-            evaluate: (Double) -> Double)
+            evaluate: (Double) throws -> Double)
         
         var description: String {
             switch self {
@@ -69,10 +69,15 @@ public class RPNCalculator {
         
         register(.BinaryOperation(symbol: Operator.Divide, associativity: .Left,
             // top-most expression on stack is divisor
-            evaluate: { $1 / $0 }))
+            evaluate: {
+                guard $0 != 0 else { throw EvaluationError.DivideByZero }
+                return $1 / $0 }))
+
         
         register(.UnaryOperation(symbol: Operator.SquareRoot, associativity: .Right,
-            evaluate: { sqrt($0) }))
+            evaluate: {
+                guard $0 >= 0 else { throw EvaluationError.ComplexNumber }
+                return sqrt($0) }))
         
         register(.UnaryOperation(symbol: Operator.Sin, associativity: .Right,
             evaluate: sin))
@@ -82,7 +87,7 @@ public class RPNCalculator {
     }
     
     /**
-     The number of operator and operands on the stack.
+     The count of operators and operands on the stack.
      */
     public var stackDepth: Int {
         return stack.count
@@ -111,17 +116,37 @@ public class RPNCalculator {
         }
         return descriptions.reverse().joinWithSeparator(", ")
     }
+
+    public enum EvaluationError : ErrorType {
+        case DivideByZero
+        case ComplexNumber
+        
+        /// - parameter symbol: the variable symbol that has no assigned value
+        case VariableNotSet(symbol: String)
+        
+        /// - parameter symbol: the symbol of the operation that could not be evaluated due to missing operands
+        case InsufficientOperandsForOperation(symbol: String)
+    }
+
+    /**
+     Errors resulting from the most recent evaluation of the calculator stack. The errors are added to the
+     array in the order in which they are encountered during evaluation.
+     */
+    public var evaluationErrors = [EvaluationError]()
     
     /**
      Clears the stack.
     */
     public func clear() {
         stack.removeAll(keepCapacity: true)
+        evaluationErrors.removeAll()
         variable.removeAll()
     }
     
     /**
-    Pushes the value onto the stack.
+     Pushes the value onto the stack.
+
+     - returns: the result returned by `evaluate()` after the push
     */
     public func pushOperand(value: Double) -> Double? {
         stack.append(StackExpression.Value(value))
@@ -131,9 +156,9 @@ public class RPNCalculator {
     /**
      Pushs the variable identified by symbol onto the stack.
      
-     :symbol: the symbol for the variable
+     - parameter symbol: the symbol to use for the variable
      
-     - returns: the valuation of the stack after the push
+     - returns: the result returned by `evaluate()` after the push
      */
     public func pushOperand(symbol: String) -> Double? {
         stack.append(StackExpression.Variable(symbol: symbol))
@@ -141,10 +166,13 @@ public class RPNCalculator {
     }
     
     /**
-    Pushes the value onto the stack with a symbol as its description.
+     Pushes the value onto the stack with a symbol as its description.
     
-    :value: the value
-    :withSymbol: the symbol
+     - parameters:
+        - value: the value
+        - withSymbol: the symbol
+     
+     - returns: the result returned by `evaluate()` after the push
     */
     public func pushOperand(value: Double, withSymbol symbol: String) -> Double? {
         stack.append(StackExpression.SymbolicValue(symbol: symbol, value: value))
@@ -153,6 +181,8 @@ public class RPNCalculator {
 
     /**
      Pushes the operator onto the stack. Unknown operator symbols are ignored.
+
+     - returns: the result returned by `evaluate()` after the push
      */
     public func pushOperator(operatorSymbol: String) -> Double? {
         if let operation = operations[operatorSymbol] {
@@ -162,7 +192,7 @@ public class RPNCalculator {
     }
 
     /**
-     Removes the last (topmost) entry from the stack.
+     Removes the last (top-most) entry from the stack.
      */
     public func removeLast() {
         if !stack.isEmpty {
@@ -171,20 +201,38 @@ public class RPNCalculator {
     }
     
     /**
-     Evaluates the stack.
+     Evaluates the calculator stack. The `evaluationErrors` property is cleared and any errors that occur during
+     evaluation are appended to the array.
      
-     - returns: the result of evaluating the stack, 0 if the stack is empty, or `nil` if the stack cannot be evaluated.
+     - returns: the result of evaluating top-most expression on the stack, 0 if the stack is empty, or `nil` if the stack cannot be evaluated.
     */
     public func evaluate() -> Double? {
         if stack.isEmpty {
             return 0
         } else {
-            let (result, _) = evaluate(stack)
-            return result
+            evaluationErrors.removeAll()
+            do {
+                let (result, _) = try evaluate(stack)
+                return result
+            } catch {
+                if error is EvaluationError {
+                    evaluationErrors.append(error as! EvaluationError)
+                }
+                return nil
+            }
         }
     }
     
-    private func evaluate(stack: [StackExpression]) -> (Double?, [StackExpression]) {
+    /**
+     Evaluates top-most expression on the stack. The stack is descended recursively until either sufficient
+     operands have been evaluated for the expression or an error is encountered that prevents the expression
+     from being evaluated.
+     
+     - returns: the result of the evaluation and the remaining stack, or `nil` if the stack is empty
+     
+     - throws: an error of type `ExpressionError`
+    */
+    private func evaluate(stack: [StackExpression]) throws -> (Double?, [StackExpression]) {
         if !stack.isEmpty {
             var remainingStack = stack
             let expression = remainingStack.removeLast()
@@ -196,21 +244,27 @@ public class RPNCalculator {
                     return (operand, remainingStack)
                 
                 case .Variable(let symbol):
-                    return (variable[symbol], remainingStack)
-                
-                case .BinaryOperation(_, _, let operation):
-                    let (operand0, remainingStack0) = evaluate(remainingStack)
-                    if operand0 != nil {
-                        let (operand1, remainingStack1) = evaluate(remainingStack0)
-                        if operand1 != nil {
-                            return (operation(operand0!, operand1!), remainingStack1)
-                        }
+                    if let value = variable[symbol] {
+                        return (value, remainingStack)
+                    } else {
+                        throw EvaluationError.VariableNotSet(symbol: symbol)
                     }
                 
-                case .UnaryOperation(_, _, let operation):
-                    let (operand0, remainingStack0) = evaluate(remainingStack)
+                case .BinaryOperation(let symbol, _, let operation):
+                    let (operand0, remainingStack0) = try evaluate(remainingStack)
+                    let (operand1, remainingStack1) = try evaluate(remainingStack0)
+                    if operand0 != nil && operand1 != nil {
+                        return try (operation(operand0!, operand1!), remainingStack1)
+                    } else {
+                        throw EvaluationError.InsufficientOperandsForOperation(symbol: symbol)
+                    }
+                
+                case .UnaryOperation(let symbol, _, let operation):
+                    let (operand0, remainingStack0) = try evaluate(remainingStack)
                     if operand0 != nil {
-                        return (operation(operand0!), remainingStack0)
+                        return try (operation(operand0!), remainingStack0)
+                    } else {
+                        throw EvaluationError.InsufficientOperandsForOperation(symbol: symbol)
                     }
             }
         }
