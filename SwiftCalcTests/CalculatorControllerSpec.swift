@@ -87,7 +87,7 @@ class CalculatorControllerSpec: QuickSpec {
                     expect(display.text) == expectedErrorMessage
                     expect(display.backgroundColor) == controller.errorBackgroundColor
                     expect(controller.operandInput) == ""
-                    expect(programDisplay.text) == "? × 1.0 " + controller.errorSymbol
+                    expect(programDisplay.text) == "1.0 × ? " + controller.errorSymbol
                 }
             }
         }

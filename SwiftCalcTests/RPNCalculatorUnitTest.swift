@@ -327,7 +327,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         given(calculator, withInput: [Operand(969.99), Add])
         expect(calculator.evaluate()).to(beNil())
         expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("+"))
-        expect(calculator.description) == "? + 969.99"
+        expect(calculator.description) == "969.99 + ?"
     }
     
     func testSubtraction() {
@@ -361,7 +361,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         given(calculator, withInput: [Operand(969.99), Subtract])
         expect(calculator.evaluate()).to(beNil())
         expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("-"))
-        expect(calculator.description) == "? - 969.99"
+        expect(calculator.description) == "969.99 - ?"
     }
     
     func testDivision() {
@@ -382,7 +382,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         given(calculator, withInput: [Operand(0.111), Divide])
         expect(calculator.evaluate()).to(beNil())
         expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("÷"))
-        expect(calculator.description) == "? ÷ 0.111"
+        expect(calculator.description) == "0.111 ÷ ?"
     }
     
     func testDivisionByZero() {
@@ -412,7 +412,7 @@ class RPNCalculatorUnitTest: XCTestCase {
         given(calculator, withInput: [Operand(0.111), Multiply])
         expect(calculator.evaluate()).to(beNil())
         expect(calculator.evaluationErrors[0]).to(beErrorIsInsufficientOperandsForOperation("×"))
-        expect(calculator.description) == "? × 0.111"
+        expect(calculator.description) == "0.111 × ?"
     }
     
     func testSquareRoot() {

@@ -297,15 +297,19 @@ public class RPNCalculator {
                     
                 case .BinaryOperation(_, let associativity, _):
                     let opDescription = expression.description
-                    var (rhsDescription, rhsAssociativity, rhsRemainingStack) = describe(remainingStack)
-                    if rhsAssociativity == .Left {
-                        rhsDescription = withParens(rhsDescription)
+                    var (operand0Description, operand0Associativity, remainingStack0) = describe(remainingStack)
+                    if operand0Associativity == .Left {
+                        operand0Description = withParens(operand0Description)
                     }
-                    var (lhsDescription, lhsAssociativity, lhsRemainingStack) = describe(rhsRemainingStack)
-                    if lhsAssociativity == .Left {
-                        lhsDescription = withParens(lhsDescription)
+                    var (operand1Description, operand1Associativity, remainingStack1) = describe(remainingStack0)
+                    if operand1Associativity == .Left {
+                        operand1Description = withParens(operand1Description)
                     }
-                    return ("\(lhsDescription) \(opDescription) \(rhsDescription)", associativity, lhsRemainingStack)
+                    if remainingStack0.isEmpty {
+                        // ensure description with missing operand is correct for division and subtraction
+                        swap(&operand0Description, &operand1Description)
+                    }
+                    return ("\(operand1Description) \(opDescription) \(operand0Description)", associativity, remainingStack1)
                 
                 case .UnaryOperation(_, let associativity, _):
                     let opDescription = expression.description
