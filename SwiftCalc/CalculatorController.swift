@@ -81,23 +81,27 @@ public class CalculatorController: UIViewController {
         }
     }
     
-    @IBAction public func clearTapGesture(sender: UITapGestureRecognizer) {
-        if !operandInput.isEmpty {
-            clearOperandInput()
-        } else {
-            calculator.removeLast()
-        }
-        displayValue = calculator.evaluate()
-    }
-    
     @IBAction public func clearPressed() {
         removeOperandInputLast()
     }
 
-    @IBAction public func clearLongPressGesture(sender: UILongPressGestureRecognizer) {
-        clearAll()
+    @IBAction public func handleClearAllGesture(sender: UILongPressGestureRecognizer) {
+        if sender.state == .Ended {
+            clearAll()
+        }
     }
-   
+
+    @IBAction public func handleClearInputGesture(sender: UITapGestureRecognizer) {
+        if sender.state == .Ended {
+            if !operandInput.isEmpty {
+                clearOperandInput()
+            } else {
+                calculator.removeLast()
+            }
+            displayValue = calculator.evaluate()
+        }
+    }
+    
     @IBAction public func decimalPointPressed() {
         if operandInput.isEmpty {
             _operandInput = "0."

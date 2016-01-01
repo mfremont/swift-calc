@@ -272,22 +272,64 @@ class CalculatorControllerSpec: QuickSpec {
                     controller.enterPressed()
                     inputOperand(controller, fromString: "9.9")
                     
-                    let simulatedRecognizer = UITapGestureRecognizer()
-                    controller.clearTapGesture(simulatedRecognizer)
+                    let simulatedRecognizer = MockUITapGestureRecognizer(simulatedState: .Ended)
+                    controller.handleClearInputGesture(simulatedRecognizer)
                     
                     expect(programDisplay.text) == operand + " ="
                     expect(display.text) == operand
                     expect(controller.operandInput).to(beEmpty())
                 }
-                it("long press clears the stack, display, and operand") {
+                it("cancelled double-tap does not clear input") {
+                    controller.enterPressed()
+                    let operandInput = "9.9"
+                    inputOperand(controller, fromString: operandInput)
+                    
+                    let simulatedRecognizer = MockUITapGestureRecognizer(simulatedState: .Cancelled)
+                    controller.handleClearInputGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == operand + " ="
+                    expect(display.text) == operandInput
+                    expect(controller.operandInput) == operandInput
+                }
+                it("began double-tap does not clear input") {
+                    controller.enterPressed()
+                    let operandInput = "9.9"
+                    inputOperand(controller, fromString: operandInput)
+                    
+                    let simulatedRecognizer = MockUITapGestureRecognizer(simulatedState: .Began)
+                    controller.handleClearInputGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == operand + " ="
+                    expect(display.text) == operandInput
+                    expect(controller.operandInput) == operandInput
+                }
+                it("completed long press gesture clears the stack, display, and operand") {
                     controller.enterPressed()
                     
-                    let simulatedRecognizer = UILongPressGestureRecognizer()
-                    controller.clearLongPressGesture(simulatedRecognizer)
+                    let simulatedRecognizer = MockUILongPressGestureRecognizer(simulatedState: .Ended)
+                    controller.handleClearAllGesture(simulatedRecognizer)
                     
                     expect(programDisplay.text) == displayPlaceholderText
                     expect(display.text) == displayPlaceholderText
-                    expect(controller.operandInput) == ""
+                    expect(controller.operandInput).to(beEmpty())
+                }
+                it("cancelled long press gesture does not alter calculator state") {
+                    controller.enterPressed()
+                    
+                    let simulatedRecognizer = MockUILongPressGestureRecognizer(simulatedState: .Cancelled)
+                    controller.handleClearAllGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == operand + " ="
+                    expect(display.text) == operand
+                }
+                it("began long press gesture does not alter calculator state") {
+                    controller.enterPressed()
+                    
+                    let simulatedRecognizer = MockUILongPressGestureRecognizer(simulatedState: .Began)
+                    controller.handleClearAllGesture(simulatedRecognizer)
+                    
+                    expect(programDisplay.text) == operand + " ="
+                    expect(display.text) == operand
                 }
             }
             
@@ -300,8 +342,8 @@ class CalculatorControllerSpec: QuickSpec {
                     inputOperand(controller, fromString: operand1)
                     controller.enterPressed()
                     
-                    let simulatedRecognizer = UITapGestureRecognizer()
-                    controller.clearTapGesture(simulatedRecognizer)
+                    let simulatedRecognizer = MockUITapGestureRecognizer(simulatedState: .Ended)
+                    controller.handleClearInputGesture(simulatedRecognizer)
                     
                     expect(programDisplay.text) == operand0 + " ="
                     expect(display.text) == operand0
@@ -391,6 +433,32 @@ class CalculatorControllerSpec: QuickSpec {
                 }
             }
         }
+    }
+}
+
+private class MockUITapGestureRecognizer: UITapGestureRecognizer {
+    let _simulatedState: UIGestureRecognizerState
+    
+    init(simulatedState: UIGestureRecognizerState) {
+        _simulatedState = simulatedState
+        super.init(target: nil, action: "")
+    }
+    
+    override var state: UIGestureRecognizerState {
+        return _simulatedState
+    }
+}
+
+private class MockUILongPressGestureRecognizer: UILongPressGestureRecognizer {
+    let _simulatedState: UIGestureRecognizerState
+    
+    init(simulatedState: UIGestureRecognizerState) {
+        _simulatedState = simulatedState
+        super.init(target: nil, action: "")
+    }
+    
+    override var state: UIGestureRecognizerState {
+        return _simulatedState
     }
 }
 

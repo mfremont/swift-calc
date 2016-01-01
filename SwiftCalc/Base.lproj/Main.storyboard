@@ -396,12 +396,12 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
                 <tapGestureRecognizer numberOfTapsRequired="2" id="aON-3S-qAV">
                     <connections>
-                        <action selector="clearTapGesture:" destination="BYZ-38-t0r" id="XZ7-8H-xCf"/>
+                        <action selector="handleClearInputGesture:" destination="BYZ-38-t0r" id="T7M-JP-V0i"/>
                     </connections>
                 </tapGestureRecognizer>
                 <pongPressGestureRecognizer allowableMovement="10" minimumPressDuration="1" id="hIO-Rk-MoW">
                     <connections>
-                        <action selector="clearLongPressGesture:" destination="BYZ-38-t0r" id="aDr-0d-7ud"/>
+                        <action selector="handleClearAllGesture:" destination="BYZ-38-t0r" id="RWv-Lf-Hli"/>
                     </connections>
                 </pongPressGestureRecognizer>
             </objects>
