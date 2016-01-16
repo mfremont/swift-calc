@@ -90,8 +90,6 @@
 				3AE935661B24B52D00395894 /* CalculatorController.swift */,
 				3AE935841B24CD7F00395894 /* RPNCalculator.swift */,
 				3AE935681B24B52D00395894 /* Main.storyboard */,
-				3AE9356B1B24B52D00395894 /* Images.xcassets */,
-				3AE9356D1B24B52D00395894 /* LaunchScreen.xib */,
 				3AE935621B24B52D00395894 /* Supporting Files */,
 			);
 			path = SwiftCalc;
@@ -100,6 +98,8 @@
 		3AE935621B24B52D00395894 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				3AE9356D1B24B52D00395894 /* LaunchScreen.xib */,
+				3AE9356B1B24B52D00395894 /* Images.xcassets */,
 				3AE935631B24B52D00395894 /* Info.plist */,
 			);
 			name = "Supporting Files";
