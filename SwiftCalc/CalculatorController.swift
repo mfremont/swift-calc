@@ -18,7 +18,9 @@ public class CalculatorController: UIViewController {
     let numberFormatter = NSNumberFormatter()
     // default text to preserve layout height of display label views
     let displayPlaceholderText = " "
-    
+
+    @IBOutlet weak var graphButton: UIButton!
+    @IBOutlet weak var useVariableButton: UIButton!
     @IBOutlet weak var display: UILabel!
     
     var displayValue: Double? {
@@ -80,6 +82,27 @@ public class CalculatorController: UIViewController {
             return _operandInput
         }
     }
+    
+    // MARK: - View Controller Lifecycle
+    
+    public override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+        if segue.identifier == "showGraph" {
+            if let graphViewController = segue.destinationViewController as? GraphViewController {
+                let graphCalculator = RPNCalculator(copyFrom: calculator)
+                let variableSymbol = useVariableButton.currentTitle ?? "x"
+                graphViewController.dataSource = { (x: Double) -> Double? in
+                    graphCalculator.variable[variableSymbol] = x
+                    return graphCalculator.evaluate()
+                }
+            }
+        }
+    }
+    
+    override public func viewDidLoad() {
+        defaultBackgroundColor = display.backgroundColor
+    }
+    
+    // MARK: - UI component callbacks
     
     @IBAction public func clearPressed() {
         removeOperandInputLast()
@@ -163,6 +186,8 @@ public class CalculatorController: UIViewController {
         display.text = _operandInput
     }
     
+    // MARK: - Internal helper methods
+    
     /**
      Clears the calculator model, operand input, and display.
      */
@@ -223,9 +248,5 @@ public class CalculatorController: UIViewController {
      */
     func doubleFromString(s: String) -> Double? {
         return numberFormatter.numberFromString(s)?.doubleValue
-    }
-    
-    override public func viewDidLoad() {
-        defaultBackgroundColor = display.backgroundColor
     }
 }

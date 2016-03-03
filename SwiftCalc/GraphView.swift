@@ -10,7 +10,10 @@ import UIKit
 import Foundation
 
 /**
- A view that presents a function plotted on a Cartesian plane.
+ A view that plots a unary function on a Cartesian plane as `y = f(x)`. The input interval of
+ the function for the drawing cycle is calculated from the current value of the `scale` and
+ `bounds` properties. The result is plotted as a series of line segments, stroked using the
+ current value of the `tintColor` property.
  */
 @IBDesignable
 public class GraphView: UIView {
@@ -159,14 +162,15 @@ public class GraphView: UIView {
      as a line 64.0 points long. The scale also determines the effective bounds of
      the Cartesian plane based on the layout width and height of the view.
      */
+    @IBInspectable
     var scale: CGFloat = Default.scale;
     
     /**
-     The function to be graphed.
-     
-     TODO: dataSource return type should be optional
+     The unary function to be plotted as `y = f(x)`. Points in the input domain where the
+     function returns `nil` are plotted as discontinuities. Updates to this instance 
+     variable will result in a call to `setNeedsDisplay()`.
      */
-    var dataSource: ((Double) -> Double)? {
+    var dataSource: ((Double) -> Double?)? {
         didSet {
             setNeedsDisplay()
         }
@@ -310,8 +314,9 @@ public class GraphView: UIView {
     }
     
     /**
-     Draws the graph of _dataSource_ as a series of line segments. The input domain of the function is
-     the inverse projection of the interval (rect.bounds.x, rect.bounds.x + rect.width).
+     Draws the graph of _dataSource_ as a series of line segments. The input domain of the 
+     function is the inverse projection of the interval 
+     `(rect.bounds.x, rect.bounds.x + rect.width)`.
      
      - parameter rect: the portion of the view's bounds that needs to be drawn
      */
@@ -326,15 +331,20 @@ public class GraphView: UIView {
             var x = xMin
             while x <= xMax {
                 let xVal = graph.x.modelCoordinate(x)
-                let yVal = f(xVal)
-                // TODO: ignore points outside of rect?
-                // TODO: how to handle discontinuities? start new path?
-                let y = graph.y.viewCoordinate(yVal)
-                if startNewPath {
-                    CGContextMoveToPoint(context, x, y)
-                    startNewPath = false
+                // TODO handle NaN (e.g. 1/x where x = 0) as discontinuity
+                // TODO handle !.isNormalNumber as discontinuity
+                if let yVal = f(xVal) {
+                    // TODO: ignore points outside of rect?
+                    let y = graph.y.viewCoordinate(yVal)
+                    if startNewPath {
+                        CGContextMoveToPoint(context, x, y)
+                        startNewPath = false
+                    } else {
+                        CGContextAddLineToPoint(context, x, y)
+                    }
                 } else {
-                    CGContextAddLineToPoint(context, x, y)
+                    // discontinuity in output range of function
+                    startNewPath = true
                 }
                 x += 1.0
             }

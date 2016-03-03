@@ -433,6 +433,37 @@ class CalculatorControllerSpec: QuickSpec {
                 }
             }
         }
+        
+        context("given expression 1 / x") {
+            let variableSymbol = "x"
+            func f(x: Double) -> Double {
+                return 1.0 / x
+            }
+            beforeEach {
+                inputOperand(controller, fromString: "1")
+                controller.enterPressed()
+                inputUseVariable(controller, symbol: variableSymbol)
+                inputOperation(controller, operation: RPNCalculator.Operator.Divide)
+            }
+            it("segues to a graph view with a copy of the calculator state") {
+                let graphViewController = GraphViewController()
+                let sender = UIButton()
+                let segue = UIStoryboardSegue(identifier: "showGraph", source: controller, destination: graphViewController)
+                controller.prepareForSegue(segue, sender: sender)
+                
+                // the dataSource on the destination controller returns the same result as the calculator
+                var x = -2.0
+                inputOperand(controller, fromString: "\(x)")
+                inputStoreVariable(controller, symbol: variableSymbol)
+                expect(graphViewController.dataSource!(x)) == doubleValue(display.text!)
+                
+                // the dataSource uses a copy of the calculator state at the time of the segue:
+                // the preceeding operation that sets a variable value in the calculator controller
+                // does not affect the result returned by the dataSource
+                x = 3.0
+                expect(graphViewController.dataSource!(x)) == f(x)
+            }
+        }
     }
 }
 

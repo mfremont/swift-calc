@@ -401,7 +401,9 @@
                     <navigationItem key="navigationItem" title="Calculator" id="lDP-mf-prx"/>
                     <connections>
                         <outlet property="display" destination="1Ob-IT-s0T" id="4Va-Am-Fnv"/>
+                        <outlet property="graphButton" destination="eTb-gV-0W1" id="JTa-Xh-fJj"/>
                         <outlet property="programDisplay" destination="pl3-zi-CH1" id="F9f-En-Q7R"/>
+                        <outlet property="useVariableButton" destination="S1A-e2-chf" id="PHE-uH-VpS"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
@@ -418,10 +420,10 @@
             </objects>
             <point key="canvasLocation" x="1205" y="301"/>
         </scene>
-        <!--Calculator Graph View Controller-->
+        <!--Graph View Controller-->
         <scene sceneID="p7W-hO-zkn">
             <objects>
-                <viewController id="gjR-wU-y2z" customClass="CalculatorGraphViewController" customModule="SwiftCalc" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="gjR-wU-y2z" customClass="GraphViewController" customModule="SwiftCalc" customModuleProvider="target" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="A5O-pM-FDd"/>
                         <viewControllerLayoutGuide type="bottom" id="Yjm-do-Adg"/>
@@ -448,6 +450,9 @@
                             <constraint firstItem="zaV-ah-5o3" firstAttribute="leading" secondItem="3DL-tD-tHt" secondAttribute="leading" id="o2c-hf-7ms"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="graphView" destination="zaV-ah-5o3" id="By6-su-fVA"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MxK-g2-cRg" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

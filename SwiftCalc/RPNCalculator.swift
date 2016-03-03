@@ -38,6 +38,19 @@ public class RPNCalculator {
         }
     }
     
+    public enum EvaluationError : ErrorType {
+        case DivideByZero
+        case ComplexNumber
+        
+        /// - parameter symbol: the variable symbol that has no assigned value
+        case VariableNotSet(symbol: String)
+        
+        /// - parameter symbol: the symbol of the operation that could not be evaluated due to missing operands
+        case InsufficientOperandsForOperation(symbol: String)
+    }
+
+    // MARK: - Instance Properties
+    
     private var stack = [StackExpression]()
     private var operations = [String:StackExpression]()
     
@@ -50,56 +63,7 @@ public class RPNCalculator {
         public static let Sin = "sin"
         public static let Cos = "cos"
     }
-    
-    public init() {
-        func register(operation: StackExpression) {
-            operations[operation.description] = operation
-        }
-        
-        register(.BinaryOperation(symbol: Operator.Add, associativity: .Left,
-            evaluate: { $0 + $1 }))
-        
-        
-        register(.BinaryOperation(symbol: Operator.Subtract, associativity: .Left,
-            // top-most expression on stack is subtrahend
-            evaluate: { $1 - $0 }))
-            
-        register(.BinaryOperation(symbol: Operator.Multiply, associativity: .Left,
-            evaluate: { $0 * $1 }))
-        
-        register(.BinaryOperation(symbol: Operator.Divide, associativity: .Left,
-            // top-most expression on stack is divisor
-            evaluate: {
-                guard $0 != 0 else { throw EvaluationError.DivideByZero }
-                return $1 / $0 }))
 
-        
-        register(.UnaryOperation(symbol: Operator.SquareRoot, associativity: .Right,
-            evaluate: {
-                guard $0 >= 0 else { throw EvaluationError.ComplexNumber }
-                return sqrt($0) }))
-        
-        register(.UnaryOperation(symbol: Operator.Sin, associativity: .Right,
-            evaluate: sin))
-        
-        register(.UnaryOperation(symbol: Operator.Cos, associativity: .Right,
-            evaluate: cos))
-    }
-    
-    /**
-     The count of operators and operands on the stack.
-     */
-    public var stackDepth: Int {
-        return stack.count
-    }
-    
-    /**
-     The mapping of variable symbols to their respective values. Used to evaluate variables
-     on the calculator stack.
-     */
-    public var variable = [String: Double]()
-
-    
     /**
      A string representation of the stack using infix and functional notation. If there are too few
      operands on the stack for an operation, this is indicated with "?" as a placeholder. Multiple
@@ -116,18 +80,7 @@ public class RPNCalculator {
         }
         return descriptions.reverse().joinWithSeparator(", ")
     }
-
-    public enum EvaluationError : ErrorType {
-        case DivideByZero
-        case ComplexNumber
-        
-        /// - parameter symbol: the variable symbol that has no assigned value
-        case VariableNotSet(symbol: String)
-        
-        /// - parameter symbol: the symbol of the operation that could not be evaluated due to missing operands
-        case InsufficientOperandsForOperation(symbol: String)
-    }
-
+    
     /**
      Errors resulting from the most recent evaluation of the calculator stack. The errors are added to the
      array in the order in which they are encountered during evaluation.
@@ -135,8 +88,72 @@ public class RPNCalculator {
     public var evaluationErrors = [EvaluationError]()
     
     /**
+     The count of operators and operands on the stack.
+     */
+    public var stackDepth: Int {
+        return stack.count
+    }
+    
+    /**
+     The mapping of variable symbols to their respective values. Used to evaluate variables
+     on the calculator stack.
+     */
+    public var variable = [String: Double]()
+
+    // MARK: - Initialization
+    
+    public init() {
+        func register(operation: StackExpression) {
+            operations[operation.description] = operation
+        }
+        
+        register(.BinaryOperation(symbol: Operator.Add, associativity: .Left,
+            evaluate: { $0 + $1 }))
+        
+        
+        register(.BinaryOperation(symbol: Operator.Subtract, associativity: .Left,
+            // top-most expression on stack is subtrahend
+            evaluate: { $1 - $0 }))
+        
+        register(.BinaryOperation(symbol: Operator.Multiply, associativity: .Left,
+            evaluate: { $0 * $1 }))
+        
+        register(.BinaryOperation(symbol: Operator.Divide, associativity: .Left,
+            // top-most expression on stack is divisor
+            evaluate: {
+                guard $0 != 0 else { throw EvaluationError.DivideByZero }
+                return $1 / $0 }))
+        
+        
+        register(.UnaryOperation(symbol: Operator.SquareRoot, associativity: .Right,
+            evaluate: {
+                guard $0 >= 0 else { throw EvaluationError.ComplexNumber }
+                return sqrt($0) }))
+        
+        register(.UnaryOperation(symbol: Operator.Sin, associativity: .Right,
+            evaluate: sin))
+        
+        register(.UnaryOperation(symbol: Operator.Cos, associativity: .Right,
+            evaluate: cos))
+    }
+    
+    /**
+     Initializes a new instance with a deep copy of the stack, variable dictionary, and registered operations
+     of the specified instance. The `evaluationErrors` property is not copied.
+     
+     - parameter copyFrom: the instance to copy
+     */
+    public init(copyFrom calculator: RPNCalculator) {
+        self.stack = calculator.stack
+        self.operations = calculator.operations
+        self.variable = calculator.variable
+    }
+    
+    // MARK: - Stack operations
+    
+    /**
      Clears the stack.
-    */
+     */
     public func clear() {
         stack.removeAll(keepCapacity: true)
         evaluationErrors.removeAll()
@@ -147,7 +164,7 @@ public class RPNCalculator {
      Pushes the value onto the stack.
 
      - returns: the result returned by `evaluate()` after the push
-    */
+     */
     public func pushOperand(value: Double) -> Double? {
         stack.append(StackExpression.Value(value))
         return evaluate()
@@ -197,6 +214,7 @@ public class RPNCalculator {
     public func removeLast() {
         if !stack.isEmpty {
             stack.removeLast()
+            // TODO clear evaluation errors?
         }
     }
     

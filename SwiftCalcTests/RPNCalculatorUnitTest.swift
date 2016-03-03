@@ -625,4 +625,46 @@ class RPNCalculatorUnitTest: XCTestCase {
         expect(calculator.evaluationErrors).to(beEmpty())
         expect(calculator.description) == "3.0 × (5.0 + 4.0)"
     }
+    
+    func testCopy() {
+        let calculatorVariableX = Variable("x")
+        let calculatorVariableB = Variable("b")
+        let valueB = -1.09
+        
+        let calculator = RPNCalculator()
+        
+        given(calculator, withInput: [Operand(2), calculatorVariableX, Multiply])
+        calculator.variable[calculatorVariableB.symbol] = valueB
+        
+        // When the calculator is copied
+        let calculatorCopy = RPNCalculator(copyFrom: calculator)
+        
+        // - the evaluation errors are not copied
+        expect(calculator.evaluationErrors).toNot(beEmpty())
+        expect(calculatorCopy.evaluationErrors).to(beEmpty())
+        
+        // - the variables are copied
+        expect(calculatorCopy.variable[calculatorVariableB.symbol]) == valueB
+        
+        // - setting variables on the copy does not affect the original
+        let variableValue = 3.3
+        calculatorCopy.variable[calculatorVariableX.symbol] = variableValue
+        expect(calculator.variable[calculatorVariableX.symbol]).to(beNil())
+        
+        // - the two instances yield the same result when evaluated with the same variables
+        calculator.variable[calculatorVariableX.symbol] = variableValue
+        expect(calculatorCopy.evaluate()) == calculator.evaluate()
+        
+        // - changing the variable value on the original does not affect the copy
+        calculator.variable[calculatorVariableX.symbol] = -1.0
+        expect(calculatorCopy.evaluate()) == 6.6
+        
+        // - removing an element from the stack of the original does not affect the copy
+        calculator.removeLast()
+        expect(calculatorCopy.evaluate()) == 6.6
+        
+        // - pushing a new element onto the stack of the original does not affect the copy
+        calculator.pushOperator(Add.symbol)
+        expect(calculatorCopy.evaluate()) == 6.6
+    }
 }
