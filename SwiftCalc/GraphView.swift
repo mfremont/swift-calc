@@ -330,8 +330,8 @@ public class GraphView: UIView {
             let xMin = rect.origin.x
             let xMax = rect.origin.x + rect.width
             var startNewPath = true
-            var x = xMin
-            while x <= xMax {
+            // step through x interval of rect in increment ~= 1 pixel
+            for x in xMin.stride(through: xMax, by: (1 / contentScaleFactor)) {
                 let xVal = graph.x.modelCoordinate(x)
                 let yVal = f(xVal)
                 if yVal != nil && yVal!.isFinite {
@@ -347,7 +347,6 @@ public class GraphView: UIView {
                     // discontinuity in output range of function
                     startNewPath = true
                 }
-                x += 1.0
             }
             
             tintColor.setStroke()
