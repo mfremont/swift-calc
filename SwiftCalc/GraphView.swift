@@ -114,6 +114,7 @@ public class GraphView: UIView {
             - scale: ratio of points in the view coordinate system to the unit value in the graph coordinate system
          */
         static func projection(bounds: CGRect, scale: CGFloat) -> GraphProjection {
+            // constrain origin to fall on an integral point
             let x = bounds.origin.x + bounds.width / 2
             let y = bounds.origin.y + bounds.height / 2
             return GraphProjection(origin: CGPoint(x: x, y: y), scale: scale)
@@ -143,7 +144,8 @@ public class GraphView: UIView {
         let y: LinearAxis
         
         init(origin: CGPoint, scale: CGFloat) {
-            self.origin = origin
+            // ensure origin falls on a view point not inbetween
+            self.origin = CGPoint(x: ceil(origin.x), y: ceil(origin.y))
             self.scale = scale
             self.x = LinearAxis(scale: scale, offset: origin.x)
             self.y = LinearAxis(scale: -scale, offset: origin.y)
@@ -331,11 +333,10 @@ public class GraphView: UIView {
             var x = xMin
             while x <= xMax {
                 let xVal = graph.x.modelCoordinate(x)
-                // TODO handle NaN (e.g. 1/x where x = 0) as discontinuity
-                // TODO handle !.isNormalNumber as discontinuity
-                if let yVal = f(xVal) {
+                let yVal = f(xVal)
+                if yVal != nil && yVal!.isFinite {
                     // TODO: ignore points outside of rect?
-                    let y = graph.y.viewCoordinate(yVal)
+                    let y = graph.y.viewCoordinate(yVal!)
                     if startNewPath {
                         CGContextMoveToPoint(context, x, y)
                         startNewPath = false
