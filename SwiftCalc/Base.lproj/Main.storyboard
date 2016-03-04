@@ -445,11 +445,15 @@
                             <view contentMode="redraw" translatesAutoresizingMaskIntoConstraints="NO" id="zaV-ah-5o3" customClass="GraphView" customModule="SwiftCalc" customModuleProvider="target">
                                 <rect key="frame" x="0.0" y="64" width="600" height="536"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <gestureRecognizers/>
                                 <userDefinedRuntimeAttributes>
                                     <userDefinedRuntimeAttribute type="number" keyPath="axisLineWidth">
                                         <real key="value" value="0.5"/>
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
+                                <connections>
+                                    <outletCollection property="gestureRecognizers" destination="IlJ-Pc-8qy" appends="YES" id="aOm-4f-7ch"/>
+                                </connections>
                             </view>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -465,6 +469,11 @@
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MxK-g2-cRg" userLabel="First Responder" sceneMemberID="firstResponder"/>
+                <pinchGestureRecognizer id="IlJ-Pc-8qy">
+                    <connections>
+                        <action selector="handlePinchGesture:" destination="gjR-wU-y2z" id="FFr-sG-dm0"/>
+                    </connections>
+                </pinchGestureRecognizer>
             </objects>
             <point key="canvasLocation" x="1913" y="301"/>
         </scene>

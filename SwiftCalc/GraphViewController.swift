@@ -25,4 +25,16 @@ class GraphViewController: UIViewController {
             }
         }
     }
+    
+    // MARK: - Gesture Handlers
+    
+    /// Interprets a pinch gesture as a change in the graph scale
+    @IBAction func handlePinchGesture(gesture: UIPinchGestureRecognizer) {
+        if gesture.state == .Changed || gesture.state == .Ended {
+            // rescale graph by gesture
+            graphView.scale *= gesture.scale
+            // reset scale so that changes are a factor of current scale
+            gesture.scale = 1
+        }
+    }
 }

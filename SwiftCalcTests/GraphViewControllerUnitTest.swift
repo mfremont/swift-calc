@@ -84,4 +84,154 @@ class GraphViewControllerUnitTest: XCTestCase {
         
         // Then no exception is thrown
     }
+    
+    func testZoomInChanged() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 1.5 and .Changed state is sent to the controller
+        let scaleFactor = CGFloat(1.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Changed, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is adjusted by the zoom factor
+        expect(graphView.scale) == originalScale * scaleFactor
+    }
+    
+    func testZoomInEnded() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 1.5 and .Ended state is sent to the controller
+        let scaleFactor = CGFloat(1.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Ended, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is adjusted by the zoom factor
+        expect(graphView.scale) == originalScale * scaleFactor
+    }
+    
+    func testZoomInBegan() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 1.5 and .Began state is sent to the controller
+        let scaleFactor = CGFloat(1.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Began, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is unchanged
+        expect(graphView.scale) == originalScale
+    }
+    
+    func testZoomInPossible() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 1.5 and .Possible state is sent to the controller
+        let scaleFactor = CGFloat(1.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Possible, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is unchanged
+        expect(graphView.scale) == originalScale
+    }
+    
+    func testZoomOutChanged() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 0.5 and .Changed state is sent to the controller
+        let scaleFactor = CGFloat(0.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Changed, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is adjusted by the zoom factor
+        expect(graphView.scale) == originalScale * scaleFactor
+    }
+    
+    func testZoomOutEnded() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 0.5 and .Ended state is sent to the controller
+        let scaleFactor = CGFloat(0.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Ended, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is adjusted by the zoom factor
+        expect(graphView.scale) == originalScale * scaleFactor
+    }
+    
+    func testZoomOutBegan() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 0.5 and .Began state is sent to the controller
+        let scaleFactor = CGFloat(0.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Began, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is unchanged
+        expect(graphView.scale) == originalScale
+    }
+    
+    func testZoomOutPossible() {
+        // Given the controller with a default graph view
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        let originalScale = graphView.scale
+        
+        // When the gesture with a zoom factor of 0.5 and .Possible state is sent to the controller
+        let scaleFactor = CGFloat(0.5)
+        let gesture = MockUIPinchGestureRecognizer(simulatedState: .Possible, scale: scaleFactor)
+        controller.handlePinchGesture(gesture)
+        
+        // Then the graph scale is unchanged
+        expect(graphView.scale) == originalScale
+    }
+    
+    private func controllerWithDefaultView() -> GraphViewController {
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        controller.graphView = graphView
+        return controller
+    }
 }
+
+private class MockUIPinchGestureRecognizer: UIPinchGestureRecognizer {
+    let _simulatedState: UIGestureRecognizerState
+    
+    init(simulatedState: UIGestureRecognizerState, scale: CGFloat) {
+        _simulatedState = simulatedState
+        super.init(target: nil, action: "")
+        self.scale = scale
+    }
+    
+    override var state: UIGestureRecognizerState {
+        return _simulatedState
+    }
+}
+

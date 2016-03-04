@@ -113,7 +113,7 @@ public class GraphView: UIView {
             - bounds: the view bounds
             - scale: ratio of points in the view coordinate system to the unit value in the graph coordinate system
          */
-        static func projection(bounds: CGRect, scale: CGFloat) -> GraphProjection {
+        static func projection(withBounds bounds: CGRect, scale: CGFloat) -> GraphProjection {
             // constrain origin to fall on an integral point
             let x = bounds.origin.x + bounds.width / 2
             let y = bounds.origin.y + bounds.height / 2
@@ -153,44 +153,54 @@ public class GraphView: UIView {
     }
     
     @IBInspectable
-    var axisColor: UIColor = UIColor.grayColor()
+    public var axisColor: UIColor = UIColor.grayColor()
     
     @IBInspectable
-    var axisLineWidth: CGFloat = Default.axisLineWidth
+    public var axisLineWidth: CGFloat = Default.axisLineWidth
+    
+    override public var bounds: CGRect {
+        didSet {
+            // TODO when implementing origin translation feature preserve relationship of origin to center of old bounds
+            projection = Default.projection(withBounds: bounds, scale: scale)
+        }
+    }
     
     /**
      The ratio of graphics context points to units in the graph. For example, with the
      default scale of 64.0, a line of length 1.0 in the Cartesian plane will be drawn
      as a line 64.0 points long. The scale also determines the effective bounds of
      the Cartesian plane based on the layout width and height of the view.
+     
+     TODO: determine desired behavior for scale == 0
+     TODO: determine desired behavior for scale < 0
      */
     @IBInspectable
-    var scale: CGFloat = Default.scale;
+    public var scale: CGFloat = Default.scale {
+        didSet {
+            if let previous = projection {
+                projection = GraphProjection(origin: previous.origin, scale: scale)
+                setNeedsDisplay()
+            }
+        }
+    }
     
     /**
      The unary function to be plotted as `y = f(x)`. Points in the input domain where the
      function returns `nil` are plotted as discontinuities. Updates to this instance 
      variable will result in a call to `setNeedsDisplay()`.
      */
-    var dataSource: ((Double) -> Double?)! {
+    public var dataSource: ((Double) -> Double?)! {
         didSet {
             setNeedsDisplay()
         }
     }
     
-    var projection: GraphProjection?
+    var projection: GraphProjection!
     
     override public func drawRect(rect: CGRect) {
         drawAxesInRect(rect)
         drawGraphInRect(rect)
      }
- 
-    override public func layoutSubviews() {
-        super.layoutSubviews()
-        if projection == nil {
-            projection = Default.projection(bounds, scale: scale)
-        }
-    }
     
     /**
      Draws the graph axes.

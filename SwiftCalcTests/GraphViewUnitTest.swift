@@ -118,4 +118,17 @@ class GraphViewUnitTest: XCTestCase {
         // Then 9 ticks are generated asymmetric about the axis center
         expect(ticks) == [ -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 ]
     }
+    
+    func testSetScaleUpdatesProjection() {
+        // Given the default graph view
+        let view = GraphView()
+        view.bounds = CGRect(x: 0, y: 0, width: 240, height: 320)
+        
+        // When the scale is changed to 128.0
+        let newScale = CGFloat(128.0)
+        view.scale = newScale
+        
+        // Then the projection is updated
+        expect(view.projection!.scale) == newScale
+    }
 }
