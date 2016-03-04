@@ -1,5 +1,5 @@
 //
-//  CalculatorGraphViewController.swift
+//  GraphViewController.swift
 //  SwiftCalc
 //
 //  Created by Matthew Fremont on 1/17/16.
@@ -10,20 +10,19 @@ import UIKit
 
 class GraphViewController: UIViewController {
 
-    @IBOutlet weak var graphView: GraphView!
-    
-    var dataSource: ((Double) -> Double?)?
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        if dataSource != nil {
-            graphView.dataSource = dataSource
+    @IBOutlet weak var graphView: GraphView! {
+        didSet {
+            if graphView != nil {
+                graphView.dataSource = dataSource
+            }
         }
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    var dataSource: ((Double) -> Double?)! {
+        didSet {
+            if graphView != nil {
+                graphView.dataSource = dataSource
+            }
+        }
     }
 }

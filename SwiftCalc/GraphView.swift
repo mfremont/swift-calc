@@ -170,7 +170,7 @@ public class GraphView: UIView {
      function returns `nil` are plotted as discontinuities. Updates to this instance 
      variable will result in a call to `setNeedsDisplay()`.
      */
-    var dataSource: ((Double) -> Double?)? {
+    var dataSource: ((Double) -> Double?)! {
         didSet {
             setNeedsDisplay()
         }
