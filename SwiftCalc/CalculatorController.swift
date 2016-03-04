@@ -11,8 +11,9 @@ import UIKit
 public class CalculatorController: UIViewController {
 
     var calculator = RPNCalculator()
-    let errorSymbol = "⚠️"
-    let errorBackgroundColor = UIColor(red: 1.0, green: 0.95, blue: 0.95, alpha:1.0)
+
+    // moderately saturated orange-yellow
+    let errorBackgroundColor = UIColor(red: 1.0, green: 0.9, blue: 0.55, alpha:1.0)
     var defaultBackgroundColor: UIColor?
     
     let numberFormatter = NSNumberFormatter()
@@ -64,7 +65,7 @@ public class CalculatorController: UIViewController {
             }
             
             if calculator.stackDepth > 0 {
-                programDisplay.text = calculator.description + " " + (evaluationError ? errorSymbol : "=")
+                programDisplay.text = calculator.description + " ="
             } else {
                 programDisplay.text = displayPlaceholderText
             }

@@ -87,7 +87,7 @@ class CalculatorControllerSpec: QuickSpec {
                     expect(display.text) == expectedErrorMessage
                     expect(display.backgroundColor) == controller.errorBackgroundColor
                     expect(controller.operandInput) == ""
-                    expect(programDisplay.text) == "1.0 × ? " + controller.errorSymbol
+                    expect(programDisplay.text) == "1.0 × ? ="
                 }
             }
         }
@@ -361,7 +361,7 @@ class CalculatorControllerSpec: QuickSpec {
 
                     inputOperation(controller, operation: RPNCalculator.Operator.SquareRoot)
                     
-                    let expectedExpressionDescription = "√(\(initialOperand)) " + controller.errorSymbol
+                    let expectedExpressionDescription = "√(\(initialOperand)) ="
                     expect(programDisplay.text) == expectedExpressionDescription
                     let expectedErrorMessage = NSLocalizedString("ErrorComplexNumber", comment: "")
                     expect(display.text) == expectedErrorMessage
@@ -376,7 +376,7 @@ class CalculatorControllerSpec: QuickSpec {
                     
                     inputOperation(controller, operation: RPNCalculator.Operator.Divide)
                     
-                    expect(programDisplay.text) == "5.0 ÷ 0.0 " + controller.errorSymbol
+                    expect(programDisplay.text) == "5.0 ÷ 0.0 ="
                     let expectedErrorMessage = NSLocalizedString("ErrorDivideByZero", comment: "")
                     expect(display.text) == expectedErrorMessage
                     expect(display.backgroundColor) == controller.errorBackgroundColor
@@ -389,7 +389,7 @@ class CalculatorControllerSpec: QuickSpec {
                     it("displays the error message") {
                         inputUseVariable(controller, symbol: variableSymbol)
                         
-                        expect(programDisplay.text) == variableSymbol + " " + controller.errorSymbol
+                        expect(programDisplay.text) == variableSymbol + " ="
                         let expectedErrorMessage = String(format: NSLocalizedString("ErrorVariableNotSet", comment:""), variableSymbol)
                         expect(display.text) == expectedErrorMessage
                     }
@@ -404,7 +404,7 @@ class CalculatorControllerSpec: QuickSpec {
                         inputOperation(controller, operation: RPNCalculator.Operator.Add)
                     }
                     it("displays the error message") {
-                        expect(programDisplay.text) == "\(operand0) + \(variableSymbol) " + controller.errorSymbol
+                        expect(programDisplay.text) == "\(operand0) + \(variableSymbol) ="
                         let expectedErrorMessage = String(format: NSLocalizedString("ErrorVariableNotSet", comment:""), variableSymbol)
                         expect(display.text) == expectedErrorMessage
                         expect(display.backgroundColor) == controller.errorBackgroundColor
@@ -425,7 +425,7 @@ class CalculatorControllerSpec: QuickSpec {
                         inputOperation(controller, operation: RPNCalculator.Operator.SquareRoot)
                         
                         
-                        expect(programDisplay.text) == "√(\(variableSymbol)) " + controller.errorSymbol
+                        expect(programDisplay.text) == "√(\(variableSymbol)) ="
                         let expectedErrorMessage = String(format: NSLocalizedString("ErrorVariableNotSet", comment:""), variableSymbol)
                         expect(display.text) == expectedErrorMessage
                         expect(display.backgroundColor) == controller.errorBackgroundColor
