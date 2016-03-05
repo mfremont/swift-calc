@@ -13,7 +13,7 @@ import Nimble
 
 class GraphViewControllerUnitTest: XCTestCase {
     
-    func testSetGraphViewUpdatesViewDataSource() {
+    func testSetGraphView() {
         // Given the function to use as a data source
         func f(x: Double) -> Double? {
             return x / 2
@@ -32,6 +32,11 @@ class GraphViewControllerUnitTest: XCTestCase {
         // Then the GraphView dataSource is set to f
         let v = 2.0
         expect(graphView.dataSource!(v)) == f(v)
+        
+        // and the gesture recognizers are registered on the view
+        let expectedRecognizers = Set([ "UIPinchGestureRecognizer" ])
+        let actualRecognizers = Set(graphView.gestureRecognizers!.map { $0.dynamicType.description() })
+        expect(actualRecognizers) == expectedRecognizers
     }
     
     func testSetGraphViewIsNilSafe() {
@@ -45,7 +50,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the controller graphView property is set to nil
         controller.graphView = nil
         
-        // Then the graphView property is nil and no exeception is thrown
+        // Then the graphView property is nil and no exeception is thrown when the property is set
         expect(controller.graphView).to(beNil())
     }
     
@@ -95,7 +100,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 1.5 and .Changed state is sent to the controller
         let scaleFactor = CGFloat(1.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Changed, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is adjusted by the zoom factor
         expect(graphView.scale) == originalScale * scaleFactor
@@ -111,7 +116,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 1.5 and .Ended state is sent to the controller
         let scaleFactor = CGFloat(1.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Ended, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is adjusted by the zoom factor
         expect(graphView.scale) == originalScale * scaleFactor
@@ -127,7 +132,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 1.5 and .Began state is sent to the controller
         let scaleFactor = CGFloat(1.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Began, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is unchanged
         expect(graphView.scale) == originalScale
@@ -143,7 +148,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 1.5 and .Possible state is sent to the controller
         let scaleFactor = CGFloat(1.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Possible, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is unchanged
         expect(graphView.scale) == originalScale
@@ -159,7 +164,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 0.5 and .Changed state is sent to the controller
         let scaleFactor = CGFloat(0.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Changed, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is adjusted by the zoom factor
         expect(graphView.scale) == originalScale * scaleFactor
@@ -175,7 +180,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 0.5 and .Ended state is sent to the controller
         let scaleFactor = CGFloat(0.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Ended, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is adjusted by the zoom factor
         expect(graphView.scale) == originalScale * scaleFactor
@@ -191,7 +196,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 0.5 and .Began state is sent to the controller
         let scaleFactor = CGFloat(0.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Began, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is unchanged
         expect(graphView.scale) == originalScale
@@ -207,7 +212,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         // When the gesture with a zoom factor of 0.5 and .Possible state is sent to the controller
         let scaleFactor = CGFloat(0.5)
         let gesture = MockUIPinchGestureRecognizer(simulatedState: .Possible, scale: scaleFactor)
-        controller.handlePinchGesture(gesture)
+        controller.pinch(gesture)
         
         // Then the graph scale is unchanged
         expect(graphView.scale) == originalScale
