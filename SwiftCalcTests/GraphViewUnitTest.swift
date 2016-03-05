@@ -80,7 +80,7 @@ class GraphViewUnitTest: XCTestCase {
         expect(ticks) == [ -2.0, -1.0, 0.0, 1.0, 2.0 ]
     }
     
-    func testLinerAxisPositiveScaleAssymeticUnitTicks() {
+    func testLinearAxisPositiveScaleAssymeticUnitTicks() {
         // Given the X axis with a scale of 64.0 offset right in view width of 320 points
         let viewWidth = CGFloat(320.0)
         let scale = CGFloat(64.0)
@@ -106,7 +106,7 @@ class GraphViewUnitTest: XCTestCase {
         expect(ticks) == [ -2.0, -1.0, 0.0, 1.0, 2.0 ]
     }
     
-    func testLinerAxisNegativeScaleAssymeticUnitTicks() {
+    func testLinearAxisNegativeScaleAssymeticUnitTicks() {
         // Given the X axis with a scale of 64.0 offset right in view height of 568 points
         let viewHeight = CGFloat(568.0)
         let scale = CGFloat(64.0)
