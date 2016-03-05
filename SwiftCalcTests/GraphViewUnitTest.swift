@@ -79,6 +79,84 @@ class GraphViewUnitTest: XCTestCase {
         // Then five ticks are generated symmetric about the axis center
         expect(ticks) == [ -2.0, -1.0, 0.0, 1.0, 2.0 ]
     }
+
+    func testLinearAxisTicksLargeMultipleOf5() {
+        // Given the X axis with a scale of 2 centered in the view width of 320 points
+        let viewWidth = CGFloat(320.0)
+        let scale = CGFloat(1.0)
+        let axis = GraphView.LinearAxis(scale: scale, offset: viewWidth/2)
+        
+        // When ticks are generated with spacing 4.0 of a unit
+        let ticks = axis.ticks((0.0, viewWidth), minSpacing: scale * 48)
+        
+        // Then seven ticks that are large multiples of 5 are generated symmetric about the axis center
+        expect(ticks) == [ -150.0, -100.0, -50.0, 0.0, 50.0, 100.0, 150.0 ]
+    }
+    
+    func testLinearAxisTicksMultipleOf5() {
+        // Given the X axis with a scale of 10 centered in the view width of 320 points
+        let viewWidth = CGFloat(320.0)
+        let scale = CGFloat(10.0)
+        let axis = GraphView.LinearAxis(scale: scale, offset: viewWidth/2)
+        
+        // When ticks are generated with spacing 4.0 of a unit
+        let ticks = axis.ticks((0.0, viewWidth), minSpacing: scale * 4.0)
+        
+        // Then seven ticks that are multiples of 5 are generated symmetric about the axis center
+        expect(ticks) == [ -15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0 ]
+    }
+
+    func testLinearAxisTicksMultipleOf2() {
+        // Given the X axis with a scale of 24.0 centered in the view width of 320 points
+        let viewWidth = CGFloat(320.0)
+        let scale = CGFloat(24.0)
+        let axis = GraphView.LinearAxis(scale: scale, offset: viewWidth/2)
+        
+        // When ticks are generated with spacing 1.5 of a unit
+        let ticks = axis.ticks((0.0, viewWidth), minSpacing: scale * 1.5)
+        
+        // Then seven ticks that are multiples of 2 are generated symmetric about the axis center
+        expect(ticks) == [ -6.0, -4.0, -2.0, 0.0, 2.0, 4.0, 6.0 ]
+    }
+    
+    func testLinearAxisTicksRoundUpUnit() {
+        // Given the X axis with a scale of 128.0 centered in the view width of 320 points
+        let viewWidth = CGFloat(320.0)
+        let scale = CGFloat(128.0)
+        let axis = GraphView.LinearAxis(scale: scale, offset: viewWidth/2)
+        
+        // When ticks are generated with spacing 0.75 of a unit
+        let ticks = axis.ticks((0.0, viewWidth), minSpacing: scale * 0.75)
+        
+        // Then three unit ticks are generated symmetric about the axis center
+        expect(ticks) == [ -1.0, 0.0, 1.0 ]
+    }
+    
+    func testLinearAxisTicksRoundUpHalfUnit() {
+        // Given the X axis with a scale of 128.0 centered in the view width of 320 points
+        let viewWidth = CGFloat(320.0)
+        let scale = CGFloat(128.0)
+        let axis = GraphView.LinearAxis(scale: scale, offset: viewWidth/2)
+        
+        // When ticks are generated with spacing 0.3 of a unit
+        let ticks = axis.ticks((0.0, viewWidth), minSpacing: scale * 0.3)
+        
+        // Then five half unit ticks are generated symmetric about the axis center
+        expect(ticks) == [ -1.0, -0.5, 0.0, 0.5, 1.0 ]
+    }
+
+    func testLinearAxisTicksRoundUpQuarterUnit() {
+        // Given the X axis with a scale of 156.0 centered in the view width of 320 points
+        let viewWidth = CGFloat(320.0)
+        let scale = CGFloat(156.0)
+        let axis = GraphView.LinearAxis(scale: scale, offset: viewWidth/2)
+        
+        // When ticks are generated with spacing 0.15 of a unit
+        let ticks = axis.ticks((0.0, viewWidth), minSpacing: scale * 0.15)
+        
+        // Then five 0.25 unit ticks are generated symmetric about the axis center
+        expect(ticks) == [ -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0 ]
+    }
     
     func testLinearAxisPositiveScaleAssymeticUnitTicks() {
         // Given the X axis with a scale of 64.0 offset right in view width of 320 points

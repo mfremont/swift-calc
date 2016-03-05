@@ -21,6 +21,8 @@ public class GraphView: UIView {
     /**
      The linear transformation between one dimension of the Cartesian plane of the model and the corresponding
      dimension in the view coordinate system.
+     
+     TODO: escalate to non-nested struct?
      */
     struct LinearAxis {
         /**
@@ -57,8 +59,12 @@ public class GraphView: UIView {
         }
         
         /**
-         Calculates evenly spaced ticks across the view interval. The view interval is usually defined
-         by the bounds: for example, the view interval for the X axis would b
+         Calculates evenly spaced ticks across the view interval. The view interval is usually
+         defined by its bounds: for example, the view interval for the X axis is
+         `(bounds.x, bounds.x + bounds.width)`. In order for the tick labels to not overlap,
+         expecially on the X axis, `minSpacing` needs to be scaled relative to the font metrics
+         and the visible domain of the graph. For tick values that can be displayed with three
+         digits or fewer, a reasonable hueristic is `minSpacing = 2.5 font.lineHeight`.
          
          - parameters:
             - viewInterval: the minimum and maximum coordinates visible in the view along the axis
@@ -73,32 +79,33 @@ public class GraphView: UIView {
             let domainMax = domainInterval[1]
             let increment = tickIncrement(minSpacing)
             // initial tick is smallest multiple of increment > domainMin
-            var tick = ceil(domainMin / increment) * increment
-            var ticks = [Double]()
-            while tick < domainMax {
-                ticks.append(tick)
-                tick += increment
-            }
-            return ticks
+            let tick0 = ceil(domainMin / increment) * increment
+            return Array(tick0.stride(to: domainMax, by: increment))
         }
         
         /**
-         Calculates the tick increment on the domain value scale with spacing in the view >= the specified minimum spacing.
-         Currently returns a fixed increment of 1.0.
-         
-         TODO: calculate the increment so that it falls on the nearest negative power of 10, 1, 2, 5, or positive
-         power of 10.
+         Calculates the tick increment on the domain value scale with spacing in the view >= 
+         the specified minimum spacing.
          
          - parameter minSpacing: the minimum spacing between ticks, measured in points
          - returns: the tick incement on the domain value scale
+         
+         TODO: simpler and more easily testable algorithm?
          */
         private func tickIncrement(minSpacing: CGFloat) -> Double {
-            /* TODO: calculate tick increment based on scale
-
-                - if increment at minSpacing < 1.0, adjust to nearest power of 10 that is >= increment
-                - if increment at minSpacing > 1.0, adjust to 2, 5, or nearest power of 10 that is >increment
-             */
-            return 1.0
+            let increment = abs(Double(minSpacing / scale))
+            if increment <= 0.25 {
+                return 0.25
+            } else if increment <= 0.5 {
+                return 0.5
+            } else if increment <= 1.0 {
+                return 1.0
+            } else if increment <= 2.0 {
+                return 2.0
+            } else {
+                // nearest multiple of 5
+                return ceil(increment / 5.0) * 5.0
+            }
         }
     }
     
@@ -220,7 +227,7 @@ public class GraphView: UIView {
             
             // tick metrics derived from font size
             let tickHalfLength = font.lineHeight / 2
-            let minTickSpacing = font.lineHeight * 4
+            let minTickSpacing = font.lineHeight * 2.5
             let tickLabelOffset = tickHalfLength + font.lineHeight * 0.2
             
             // TODO: only draw portion of axes that intersects rect
@@ -301,6 +308,8 @@ public class GraphView: UIView {
          - horizontalAlignment: the horizontal alignment to apply for positioning the text box
          - verticalAlignment: the vertical alignment to apply for positioning the text box
      - returns: the positioned rectangle for drawing the text
+     
+     TODO: improve testability (?) by refactoring as rect(withSize: CGSize, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment)
      */
     private func textRect(text: String, withAttributes attributes: [String: AnyObject]?, horizontalAlignment: HorizontalAlignment, verticalAlignment: VerticalAlignment) -> CGRect {
         var rect = CGRect()
