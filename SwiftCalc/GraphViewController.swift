@@ -27,7 +27,7 @@ public class GraphViewController: UIViewController {
         }
     }
     
-    // MARK: - Gesture Handlers
+    // MARK: - Gestures
     
     /// Interprets a pinch gesture as a change in the graph scale
     public func pinch(gesture: UIPinchGestureRecognizer) {
@@ -39,7 +39,17 @@ public class GraphViewController: UIViewController {
         }
     }
     
+    /// Interprets a pan gesture as a change in the graph origin
+    public func pan(gesture: UIPanGestureRecognizer) {
+        if gesture.state == .Changed || gesture.state == .Ended {
+            graphView.translateGraphOrigin(gesture.translationInView(graphView))
+            // reset the translation so that future changes are incremental
+            gesture.setTranslation(CGPointZero, inView: graphView)
+        }
+    }
+    
     private func setupGestureRecognizers() {
         graphView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: "pinch:"))
+        graphView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: "pan:"))
     }
 }

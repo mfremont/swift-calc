@@ -209,4 +209,41 @@ class GraphViewUnitTest: XCTestCase {
         // Then the projection is updated
         expect(view.projection!.scale) == newScale
     }
+    
+    func testTranslateGraphOrigin() {
+        // Given the default graph view
+        let view = GraphView()
+        view.bounds = CGRect(x: 0, y: 0, width: 240, height: 320)
+        let originalOrigin = view.origin
+        let originalScale = view.projection.scale
+        
+        // When the graph origin is translated by x: 10, y: -10
+        let delta = CGPoint(x: 10.0, y: -10)
+        view.translateGraphOrigin(delta)
+        
+        // Then the new graph origin is above and to the right of the view center by 10 points
+        expect(view.projection.origin.x) == originalOrigin.x + delta.x
+        expect(view.projection.origin.y) == originalOrigin.y + delta.y
+
+        // and the scale is unchanged
+        expect(view.projection.scale) == originalScale
+    }
+    
+    func testTranslateGraphOriginNoChange() {
+        // Given the default graph view
+        let view = GraphView()
+        view.bounds = CGRect(x: 0, y: 0, width: 240, height: 320)
+        let originalOrigin = view.origin
+        let originalScale = view.projection.scale
+        
+        // When the graph origin is translated by x: 0, y: 0
+        let delta = CGPoint(x: 0, y: 0)
+        view.translateGraphOrigin(delta)
+        
+        // Then the graph origin is unchanged
+        expect(view.projection.origin) == originalOrigin
+        
+        // and the scale is unchanged
+        expect(view.projection.scale) == originalScale
+    }
 }

@@ -172,6 +172,11 @@ public class GraphView: UIView {
         }
     }
     
+    /// the graph origin in the view coordinate system
+    public var origin: CGPoint {
+        return projection.origin
+    }
+    
     /**
      The ratio of graphics context points to units in the graph. For example, with the
      default scale of 64.0, a line of length 1.0 in the Cartesian plane will be drawn
@@ -207,7 +212,21 @@ public class GraphView: UIView {
     override public func drawRect(rect: CGRect) {
         drawAxesInRect(rect)
         drawGraphInRect(rect)
-     }
+    }
+    
+    /**
+     Moves the origin of the graph in the view coordinate system by the specified change in
+     the X and Y coordinates. In the default upper left origin coordinate system of UIKit,
+     a negative change in `delta.y` moves the origin towards the top of the view and a
+     positive change moves it towards the bottom.
+     
+     - parameter delta: the change to the graph origin X and Y coordinates
+     */
+    public func translateGraphOrigin(delta: CGPoint) {
+        let newOrigin = CGPoint(x: projection.origin.x + delta.x, y:projection.origin.y + delta.y)
+        projection = GraphProjection(origin: newOrigin, scale: projection.scale)
+        setNeedsDisplay()
+    }
     
     /**
      Draws the graph axes.

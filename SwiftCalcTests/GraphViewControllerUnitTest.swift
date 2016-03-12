@@ -34,7 +34,7 @@ class GraphViewControllerUnitTest: XCTestCase {
         expect(graphView.dataSource!(v)) == f(v)
         
         // and the gesture recognizers are registered on the view
-        let expectedRecognizers = Set([ "UIPinchGestureRecognizer" ])
+        let expectedRecognizers = Set([ "UIPinchGestureRecognizer", "UIPanGestureRecognizer" ])
         let actualRecognizers = Set(graphView.gestureRecognizers!.map { $0.dynamicType.description() })
         expect(actualRecognizers) == expectedRecognizers
     }
@@ -217,12 +217,76 @@ class GraphViewControllerUnitTest: XCTestCase {
         // Then the graph scale is unchanged
         expect(graphView.scale) == originalScale
     }
-    
-    private func controllerWithDefaultView() -> GraphViewController {
+  
+    func testPanBegan_doesNotUpdateOrigin() {
+        // Given the controller with a default graph view and the bounds
         let controller = GraphViewController()
         let graphView = GraphView()
+        graphView.bounds = CGRect(x: 0, y: 0, width: 320, height: 575)
         controller.graphView = graphView
-        return controller
+        let originalGraphOrigin = graphView.origin
+        let originalGraphScale = graphView.scale
+        
+        // When the pan gesture with .Began state and the translation is sent to the controller
+        let delta = CGPoint(x: 10, y: -10)
+        let gesture = MockUIPanGestureRecognizer(simulatedState: .Began, withTranslation: delta, inView: graphView)
+        controller.pan(gesture)
+        
+        // Then the graph origin is not translated
+        expect(graphView.origin) == originalGraphOrigin
+        
+        // and the scale is unchanged
+        expect(graphView.scale) == originalGraphScale
+    }
+
+    func testPanEnded() {
+        // Given the controller with a default graph view and the bounds
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        graphView.bounds = CGRect(x: 0, y: 0, width: 320, height: 575)
+        controller.graphView = graphView
+        let originalGraphOrigin = graphView.origin
+        let originalGraphScale = graphView.scale
+        
+        // When the pan gesture with .Ended state and the translation is sent to the controller
+        let delta = CGPoint(x: 10, y: -10)
+        let gesture = MockUIPanGestureRecognizer(simulatedState: .Ended, withTranslation: delta, inView: graphView)
+        controller.pan(gesture)
+        
+        // Then the graph origin is translated
+        expect(graphView.origin.x) == originalGraphOrigin.x + delta.x
+        expect(graphView.origin.y) == originalGraphOrigin.y + delta.y
+        
+        // and the translation is reset
+        expect(gesture.translationInView(graphView)) == CGPointZero
+        
+        // and the scale is unchanged
+        expect(graphView.scale) == originalGraphScale
+    }
+    
+    func testPanChanged() {
+        // Given the controller with a default graph view and the bounds
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        graphView.bounds = CGRect(x: 0, y: 0, width: 320, height: 575)
+        controller.graphView = graphView
+        let originalGraphOrigin = graphView.origin
+        let originalGraphScale = graphView.scale
+        
+        // When the pan gesture with .Changed state and the translation is sent to the controller
+        let delta = CGPoint(x: 10, y: -10)
+        let gesture = MockUIPanGestureRecognizer(simulatedState: .Changed, withTranslation: delta, inView: graphView)
+        controller.pan(gesture)
+        
+        // Then the graph origin is translated
+        expect(graphView.origin.x) == originalGraphOrigin.x + delta.x
+        expect(graphView.origin.y) == originalGraphOrigin.y + delta.y
+
+        // and the translation is reset
+        expect(gesture.translationInView(graphView)) == CGPointZero
+
+        // and the scale is unchanged
+        expect(graphView.scale) == originalGraphScale
     }
 }
 
@@ -240,3 +304,32 @@ private class MockUIPinchGestureRecognizer: UIPinchGestureRecognizer {
     }
 }
 
+private class MockUIPanGestureRecognizer: UIPanGestureRecognizer {
+    let _simulatedState: UIGestureRecognizerState
+    var _simulatedTranslation: CGPoint
+    var _viewForTranslation: UIView?
+    
+    init(simulatedState: UIGestureRecognizerState, withTranslation translation: CGPoint, inView view: UIView) {
+        _simulatedState = simulatedState
+        _simulatedTranslation = translation
+        _viewForTranslation = view
+        super.init(target: nil, action: "")
+    }
+    
+    override var state: UIGestureRecognizerState {
+        return _simulatedState
+    }
+    
+    override func translationInView(view: UIView?) -> CGPoint {
+        if (_viewForTranslation == nil) || (view != nil && view! == _viewForTranslation) {
+            return _simulatedTranslation
+        } else {
+            return super.translationInView(view)
+        }
+    }
+    
+    override func setTranslation(translation: CGPoint, inView view: UIView?) {
+        _simulatedTranslation = translation
+        _viewForTranslation = view
+    }
+}
