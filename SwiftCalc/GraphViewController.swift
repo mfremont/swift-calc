@@ -48,8 +48,18 @@ public class GraphViewController: UIViewController {
         }
     }
     
+    /// Interprets a double-tap gesture as a new position for the graph origin
+    public func tapToSetOrigin(gesture: UITapGestureRecognizer) {
+        if gesture.state == .Ended {
+            graphView.origin = gesture.locationInView(graphView)
+        }
+    }
+    
     private func setupGestureRecognizers() {
         graphView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: "pinch:"))
         graphView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: "pan:"))
+        let doubleTap = UITapGestureRecognizer(target: self, action: "tapToSetOrigin:")
+        doubleTap.numberOfTapsRequired = 2
+        graphView.addGestureRecognizer(doubleTap)
     }
 }

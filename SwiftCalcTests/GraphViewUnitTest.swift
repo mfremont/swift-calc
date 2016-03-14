@@ -246,4 +246,21 @@ class GraphViewUnitTest: XCTestCase {
         // and the scale is unchanged
         expect(view.projection.scale) == originalScale
     }
+    
+    func testSetOrigin() {
+       // Given the default graph view
+        let view = GraphView()
+        view.bounds = CGRect(x: 0, y: 0, width: 240, height: 320)
+        let originalScale = view.projection.scale
+
+        // When the origin is set to a new point
+        let newOrigin = CGPoint(x: 10, y: 10)
+        view.origin = newOrigin
+        
+        // Then the graph origin is updated
+        expect(view.projection.origin) == newOrigin
+        
+        // and the scale is unchanges
+        expect(view.projection.scale) == originalScale
+    }
 }

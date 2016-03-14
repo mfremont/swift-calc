@@ -174,7 +174,8 @@ public class GraphView: UIView {
     
     /// the graph origin in the view coordinate system
     public var origin: CGPoint {
-        return projection.origin
+        get { return projection.origin }
+        set { projection = GraphProjection(origin: newValue, scale: projection.scale) }
     }
     
     /**
@@ -191,7 +192,6 @@ public class GraphView: UIView {
         didSet {
             if let previous = projection {
                 projection = GraphProjection(origin: previous.origin, scale: scale)
-                setNeedsDisplay()
             }
         }
     }
@@ -207,7 +207,11 @@ public class GraphView: UIView {
         }
     }
     
-    var projection: GraphProjection!
+    var projection: GraphProjection! {
+        didSet {
+            setNeedsDisplay()
+        }
+    }
     
     override public func drawRect(rect: CGRect) {
         drawAxesInRect(rect)
@@ -225,7 +229,6 @@ public class GraphView: UIView {
     public func translateGraphOrigin(delta: CGPoint) {
         let newOrigin = CGPoint(x: projection.origin.x + delta.x, y:projection.origin.y + delta.y)
         projection = GraphProjection(origin: newOrigin, scale: projection.scale)
-        setNeedsDisplay()
     }
     
     /**

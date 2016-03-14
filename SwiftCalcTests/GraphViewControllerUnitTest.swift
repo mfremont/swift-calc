@@ -13,7 +13,7 @@ import Nimble
 
 class GraphViewControllerUnitTest: XCTestCase {
     
-    func testSetGraphView() {
+    func testGraphView_isConnectedToDataSourceAndGestureRecognizers() {
         // Given the function to use as a data source
         func f(x: Double) -> Double? {
             return x / 2
@@ -34,9 +34,8 @@ class GraphViewControllerUnitTest: XCTestCase {
         expect(graphView.dataSource!(v)) == f(v)
         
         // and the gesture recognizers are registered on the view
-        let expectedRecognizers = Set([ "UIPinchGestureRecognizer", "UIPanGestureRecognizer" ])
         let actualRecognizers = Set(graphView.gestureRecognizers!.map { $0.dynamicType.description() })
-        expect(actualRecognizers) == expectedRecognizers
+        expect(actualRecognizers).to(contain("UIPanGestureRecognizer", "UIPinchGestureRecognizer", "UITapGestureRecognizer"))
     }
     
     func testSetGraphViewIsNilSafe() {
@@ -288,6 +287,71 @@ class GraphViewControllerUnitTest: XCTestCase {
         // and the scale is unchanged
         expect(graphView.scale) == originalGraphScale
     }
+    
+    func testTapBegan_doesNotUpdateOrigin() {
+        // Given the controller with a default graph view and the bounds
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        graphView.bounds = CGRect(x: 0, y: 0, width: 320, height: 575)
+        controller.graphView = graphView
+        let originalGraphOrigin = graphView.origin
+        let originalGraphScale = graphView.scale
+ 
+        
+        // When the tap gesture with .Began state is sent to the controller
+        let newOrigin = CGPoint(x: 10, y: 10)
+        let gesture = MockUITapGestureRecognizer(simulatedState: .Began, taps: 2, withLocation: newOrigin, inView: graphView)
+        controller.tapToSetOrigin(gesture)
+        
+        // Then the origin is unchanged
+        expect(graphView.origin) == originalGraphOrigin
+        
+        // and the scale is unchanged
+        expect(graphView.scale) == originalGraphScale
+    }
+    
+    func testTapChanged_doesNotUpdateOrigin() {
+        // Given the controller with a default graph view and the bounds
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        graphView.bounds = CGRect(x: 0, y: 0, width: 320, height: 575)
+        controller.graphView = graphView
+        let originalGraphOrigin = graphView.origin
+        let originalGraphScale = graphView.scale
+        
+        
+        // When the tap gesture with .Changed state is sent to the controller
+        let newOrigin = CGPoint(x: 10, y: 10)
+        let gesture = MockUITapGestureRecognizer(simulatedState: .Began, taps: 2, withLocation: newOrigin, inView: graphView)
+       controller.tapToSetOrigin(gesture)
+        
+        // Then the origin is unchanged
+        expect(graphView.origin) == originalGraphOrigin
+        
+        // and the scale is unchanged
+        expect(graphView.scale) == originalGraphScale
+    }
+    
+    func testTapEnded_updatesOrigin() {
+        // Given the controller with a default graph view and the bounds
+        let controller = GraphViewController()
+        let graphView = GraphView()
+        graphView.bounds = CGRect(x: 0, y: 0, width: 320, height: 575)
+        controller.graphView = graphView
+        let originalGraphScale = graphView.scale
+        
+        
+        // When the tap gesture with .Ended state is sent to the controller
+        let newOrigin = CGPoint(x: 10, y: 10)
+        let gesture = MockUITapGestureRecognizer(simulatedState: .Ended, taps: 2, withLocation: newOrigin, inView: graphView)
+        controller.tapToSetOrigin(gesture)
+        
+        // Then the origin is moved to the new position
+        expect(graphView.origin) == newOrigin
+        
+        // and the scale is unchanged
+        expect(graphView.scale) == originalGraphScale
+    }
 }
 
 private class MockUIPinchGestureRecognizer: UIPinchGestureRecognizer {
@@ -331,5 +395,37 @@ private class MockUIPanGestureRecognizer: UIPanGestureRecognizer {
     override func setTranslation(translation: CGPoint, inView view: UIView?) {
         _simulatedTranslation = translation
         _viewForTranslation = view
+    }
+}
+
+private class MockUITapGestureRecognizer: UITapGestureRecognizer {
+    let _simulatedState: UIGestureRecognizerState
+    let _simulatedTaps: Int
+    let _simulatedLocation: CGPoint
+    let _view: UIView
+    
+    init(simulatedState: UIGestureRecognizerState, taps: Int, withLocation location: CGPoint, inView view: UIView) {
+        _simulatedState = simulatedState
+        _simulatedTaps = taps
+        _simulatedLocation = location
+        _view = view
+        super.init(target: nil, action: "")
+        self.numberOfTapsRequired = taps
+    }
+    
+    override var state: UIGestureRecognizerState {
+        return _simulatedState
+    }
+
+    override func locationInView(view: UIView?) -> CGPoint {
+        if view != nil && view! == _view {
+            return _simulatedLocation
+        } else {
+            return super.locationInView(view)
+        }
+    }
+    
+    override func numberOfTouches() -> Int {
+        return 1
     }
 }
