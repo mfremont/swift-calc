@@ -472,7 +472,7 @@ private class MockUITapGestureRecognizer: UITapGestureRecognizer {
     
     init(simulatedState: UIGestureRecognizerState) {
         _simulatedState = simulatedState
-        super.init(target: nil, action: "")
+        super.init(target: nil, action: nil)
     }
     
     override var state: UIGestureRecognizerState {
@@ -485,7 +485,7 @@ private class MockUILongPressGestureRecognizer: UILongPressGestureRecognizer {
     
     init(simulatedState: UIGestureRecognizerState) {
         _simulatedState = simulatedState
-        super.init(target: nil, action: "")
+        super.init(target: nil, action: nil)
     }
     
     override var state: UIGestureRecognizerState {

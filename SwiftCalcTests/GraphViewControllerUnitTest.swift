@@ -359,7 +359,7 @@ private class MockUIPinchGestureRecognizer: UIPinchGestureRecognizer {
     
     init(simulatedState: UIGestureRecognizerState, scale: CGFloat) {
         _simulatedState = simulatedState
-        super.init(target: nil, action: "")
+        super.init(target: nil, action: nil)
         self.scale = scale
     }
     
@@ -377,7 +377,7 @@ private class MockUIPanGestureRecognizer: UIPanGestureRecognizer {
         _simulatedState = simulatedState
         _simulatedTranslation = translation
         _viewForTranslation = view
-        super.init(target: nil, action: "")
+        super.init(target: nil, action: nil)
     }
     
     override var state: UIGestureRecognizerState {
@@ -409,7 +409,7 @@ private class MockUITapGestureRecognizer: UITapGestureRecognizer {
         _simulatedTaps = taps
         _simulatedLocation = location
         _view = view
-        super.init(target: nil, action: "")
+        super.init(target: nil, action: nil)
         self.numberOfTapsRequired = taps
     }
     

@@ -56,9 +56,9 @@ public class GraphViewController: UIViewController {
     }
     
     private func setupGestureRecognizers() {
-        graphView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: "pinch:"))
-        graphView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: "pan:"))
-        let doubleTap = UITapGestureRecognizer(target: self, action: "tapToSetOrigin:")
+        graphView.addGestureRecognizer(UIPinchGestureRecognizer(target: self, action: #selector(GraphViewController.pinch(_:))))
+        graphView.addGestureRecognizer(UIPanGestureRecognizer(target: self, action: #selector(GraphViewController.pan(_:))))
+        let doubleTap = UITapGestureRecognizer(target: self, action: #selector(GraphViewController.tapToSetOrigin(_:)))
         doubleTap.numberOfTapsRequired = 2
         graphView.addGestureRecognizer(doubleTap)
     }
