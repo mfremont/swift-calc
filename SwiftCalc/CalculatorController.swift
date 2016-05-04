@@ -90,6 +90,7 @@ public class CalculatorController: UIViewController {
         if segue.identifier == "showGraph" {
             if let graphViewController = segue.destinationViewController as? GraphViewController {
                 let graphCalculator = RPNCalculator(copyFrom: calculator)
+                graphViewController.title = graphCalculator.description
                 let variableSymbol = useVariableButton.currentTitle ?? "x"
                 graphViewController.dataSource = { (x: Double) -> Double? in
                     graphCalculator.variable[variableSymbol] = x

@@ -26,7 +26,7 @@ public class GraphViewController: UIViewController {
             }
         }
     }
-    
+       
     // MARK: - Gestures
     
     /// Interprets a pinch gesture as a change in the graph scale

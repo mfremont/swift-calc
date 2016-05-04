@@ -457,6 +457,9 @@ class CalculatorControllerSpec: QuickSpec {
                 inputStoreVariable(controller, symbol: variableSymbol)
                 expect(graphViewController.dataSource!(x)) == doubleValue(display.text!)
                 
+                // the title of the new controller is the program description
+                expect(graphViewController.title! + " =") == programDisplay.text
+                
                 // the dataSource uses a copy of the calculator state at the time of the segue:
                 // the preceeding operation that sets a variable value in the calculator controller
                 // does not affect the result returned by the dataSource

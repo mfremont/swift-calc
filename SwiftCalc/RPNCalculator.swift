@@ -82,6 +82,14 @@ public class RPNCalculator {
     }
     
     /**
+     The string representation of the top-most expression on the stack using infix and functional notation. 
+     */
+    public var descriptionOfTopmostExpression: String {
+        let (expressionDescription, _, _) = describe(stack)
+        return expressionDescription
+    }
+    
+    /**
      Errors resulting from the most recent evaluation of the calculator stack. The errors are added to the
      array in the order in which they are encountered during evaluation.
      */
