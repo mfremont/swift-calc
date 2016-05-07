@@ -64,7 +64,7 @@ public class GraphView: UIView {
          `(bounds.x, bounds.x + bounds.width)`. In order for the tick labels to not overlap,
          expecially on the X axis, `minSpacing` needs to be scaled relative to the font metrics
          and the visible domain of the graph. For tick values that can be displayed with three
-         digits or fewer, a reasonable hueristic is `minSpacing = 2.5 font.lineHeight`.
+         or fewer  digits, a reasonable hueristic is `minSpacing = 2.5 * font.lineHeight`.
          
          - parameters:
             - viewInterval: the minimum and maximum coordinates visible in the view along the axis
@@ -151,8 +151,7 @@ public class GraphView: UIView {
         let y: LinearAxis
         
         init(origin: CGPoint, scale: CGFloat) {
-            // ensure origin falls on a view point not inbetween
-            self.origin = CGPoint(x: ceil(origin.x), y: ceil(origin.y))
+            self.origin = origin
             self.scale = scale
             self.x = LinearAxis(scale: scale, offset: origin.x)
             self.y = LinearAxis(scale: -scale, offset: origin.y)
@@ -167,8 +166,17 @@ public class GraphView: UIView {
     
     override public var bounds: CGRect {
         didSet {
-            // TODO when implementing origin translation feature preserve relationship of origin to center of old bounds
-            projection = Default.projection(withBounds: bounds, scale: scale)
+             if let oldProjection = projection {
+                let oldBounds = oldValue
+                let dx = oldProjection.origin.x - CGRectGetMidX(oldBounds)
+                let dy = oldProjection.origin.y - CGRectGetMidY(oldBounds)
+                // preserve offset of origin from bounds center
+                let newOrigin = CGPoint(x: CGRectGetMidX(bounds) + dx, y: CGRectGetMidY(bounds) + dy)
+                origin = newOrigin
+            } else {
+                // calculate a default origin first time bounds are set
+                projection = Default.projection(withBounds: bounds, scale: scale)
+            }
         }
     }
     

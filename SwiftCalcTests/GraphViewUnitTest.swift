@@ -263,4 +263,164 @@ class GraphViewUnitTest: XCTestCase {
         // and the scale is unchanges
         expect(view.projection.scale) == originalScale
     }
+    
+    let orientationChangeTestCases = [
+        (
+            description: "portrait to landscape; iPhone 6; upper right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            initialOrigin: CGPoint(x: 375.0/2 + 120, y: 603.0/2 - 100),
+            newBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            expectedNewOrigin: CGPoint(x: 667.0/2 + 120, y: 343.0/2 - 100)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6; upper right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            initialOrigin: CGPoint(x: 667.0/2 + 120, y: 343.0/2 - 100),
+            newBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            expectedNewOrigin: CGPoint(x: 375.0/2 + 120, y: 603.0/2 - 100)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6; lower right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            initialOrigin: CGPoint(x: 375.0/2 + 120, y: 603.0/2 + 100),
+            newBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            expectedNewOrigin: CGPoint(x: 667.0/2 + 120, y: 343.0/2 + 100)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6; lower right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            initialOrigin: CGPoint(x: 667.0/2 + 120, y: 343.0/2 + 100),
+            newBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            expectedNewOrigin: CGPoint(x: 375.0/2 + 120, y: 603.0/2 + 100)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6; lower left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            initialOrigin: CGPoint(x: 375.0/2 - 75, y: 603.0/2 + 91),
+            newBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            expectedNewOrigin: CGPoint(x: 667.0/2 - 75, y: 343.0/2 + 91)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6; lower left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            initialOrigin: CGPoint(x: 667.0/2 - 75, y: 343.0/2 + 91),
+            newBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            expectedNewOrigin: CGPoint(x: 375.0/2 - 75 , y: 603.0/2 + 91)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6; upper left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            initialOrigin: CGPoint(x: 375.0/2 - 86, y: 603.0/2 - 17),
+            newBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            expectedNewOrigin: CGPoint(x: 667.0/2 - 86, y: 343.0/2 - 17)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6; upper left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            initialOrigin: CGPoint(x: 667.0/2 - 86, y: 343.0/2 - 17),
+            newBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            expectedNewOrigin: CGPoint(x: 375.0/2 - 86 , y: 603.0/2 - 17)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6+; upper right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            initialOrigin: CGPoint(x: 414.0/2 + 65, y: 672.0/2 - 22),
+            newBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            expectedNewOrigin: CGPoint(x: 736.0/2 + 65, y: 350.0/2 - 22)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6+; upper right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            initialOrigin: CGPoint(x: 736.0/2 + 66, y: 350.0/2 - 31),
+            newBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            expectedNewOrigin: CGPoint(x: 414.0/2 + 66, y: 672.0/2 - 31)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6+; lower right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            initialOrigin: CGPoint(x: 414.0/2 + 65, y: 672.0/2 + 11),
+            newBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            expectedNewOrigin: CGPoint(x: 736.0/2 + 65, y: 350.0/2 + 11)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6+; lower right graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            initialOrigin: CGPoint(x: 736.0/2 + 32, y: 350.0/2 + 32),
+            newBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            expectedNewOrigin: CGPoint(x: 414.0/2 + 32, y: 672.0/2 + 32)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6+; lower left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            initialOrigin: CGPoint(x: 414.0/2 - 17, y: 672.0/2 + 102),
+            newBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            expectedNewOrigin: CGPoint(x: 736.0/2 - 17, y: 350.0/2 + 102)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6+; lower left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            initialOrigin: CGPoint(x: 736.0/2 - 116, y: 350.0/2 + 1),
+            newBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            expectedNewOrigin: CGPoint(x: 414.0/2 - 116, y: 672.0/2 + 1)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6+; upper left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            initialOrigin: CGPoint(x: 414.0/2 - 34, y: 672.0/2 - 57),
+            newBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            expectedNewOrigin: CGPoint(x: 736.0/2 - 34, y: 350.0/2 - 57)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6+; upper left graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            initialOrigin: CGPoint(x: 736.0/2 - 1, y: 350.0/2 - 99),
+            newBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            expectedNewOrigin: CGPoint(x: 414.0/2 - 1, y: 672.0/2 - 99)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6; centered graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            initialOrigin: CGPoint(x: 375.0/2, y: 603.0/2),
+            newBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            expectedNewOrigin: CGPoint(x: 667.0/2, y: 343.0/2)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6; centered graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 667, height: 343),
+            initialOrigin: CGPoint(x: 667.0/2, y: 343.0/2),
+            newBounds: CGRect(x:0, y:0, width: 375, height: 603),
+            expectedNewOrigin: CGPoint(x: 375.0/2, y: 603.0/2)
+        ),
+        (
+            description: "portrait to landscape; iPhone 6+; centered graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            initialOrigin: CGPoint(x: 414.0/2, y: 672.0/2),
+            newBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            expectedNewOrigin: CGPoint(x: 736.0/2, y: 350.0/2)
+        ),
+        (
+            description: "landscape to portrait; iPhone 6+; centered graph origin",
+            initialBounds: CGRect(x:0, y:0, width: 736, height: 350),
+            initialOrigin: CGPoint(x: 736.0/2, y: 350.0/2),
+            newBounds: CGRect(x:0, y:0, width: 414, height: 672),
+            expectedNewOrigin: CGPoint(x: 414.0/2, y: 672.0/2)
+        )
+        ]
+    
+    func testOrientationChange() {
+        for testCase in orientationChangeTestCases {
+            // Given the graph view in the initial orientation
+            let view = GraphView()
+            view.bounds = testCase.initialBounds
+            
+            // and the initial origin
+            view.origin = testCase.initialOrigin
+
+            // When the orientation is changed
+            view.bounds = testCase.newBounds
+            
+            // Then the graph view origin is updated
+            XCTAssertEqual(view.origin, testCase.expectedNewOrigin, testCase.description)
+        }
+    }
 }
