@@ -269,19 +269,15 @@ public class GraphView: UIView {
             CGContextMoveToPoint(context, xMin, y0)
             CGContextAddLineToPoint(context, xMax, y0)
             
-            func drawXTick(tick: Double) {
-                let xTick = graph.x.viewCoordinate(tick)
-                // tick mark
-                CGContextMoveToPoint(context, xTick, (y0 - tickHalfLength))
-                CGContextAddLineToPoint(context, xTick, (y0 + tickHalfLength))
-                
-                // label
-                drawString("\(tick)", withAttributes: labelTextAttributes, horizontalAlignment: .Center(xTick), verticalAlignment: .TopEdge(y0 + tickLabelOffset))
-            }
-            
-            for tick in graph.x.ticks((xMin, xMax), minSpacing: minTickSpacing) {
+            graph.x.ticks((xMin, xMax), minSpacing: minTickSpacing).forEach { tick in
                 if tick != 0.0 {
-                    drawXTick(tick)
+                    let xTick = graph.x.viewCoordinate(tick)
+                    // tick mark
+                    CGContextMoveToPoint(context, xTick, (y0 - tickHalfLength))
+                    CGContextAddLineToPoint(context, xTick, (y0 + tickHalfLength))
+                    
+                    // label
+                    drawString("\(tick)", withAttributes: labelTextAttributes, horizontalAlignment: .Center(xTick), verticalAlignment: .TopEdge(y0 + tickLabelOffset))
                 }
             }
             
@@ -292,19 +288,15 @@ public class GraphView: UIView {
             CGContextMoveToPoint(context, x0, yMin)
             CGContextAddLineToPoint(context, x0, yMax)
             
-            func drawYTick(tick: Double) {
-                let yTick = graph.y.viewCoordinate(tick)
-                // tick mark
-                CGContextMoveToPoint(context, (x0 - tickHalfLength), yTick)
-                CGContextAddLineToPoint(context, (x0 + tickHalfLength), yTick)
-                
-                // label
-                drawString("\(tick)", withAttributes: labelTextAttributes, horizontalAlignment: .RightEdge(x0 - tickLabelOffset), verticalAlignment: .Center(yTick))
-            }
-            
-            for tick in graph.y.ticks((yMin, yMax), minSpacing: minTickSpacing) {
+            graph.y.ticks((yMin, yMax), minSpacing: minTickSpacing).forEach { tick in
                 if tick != 0.0 {
-                    drawYTick(tick)
+                    let yTick = graph.y.viewCoordinate(tick)
+                    // tick mark
+                    CGContextMoveToPoint(context, (x0 - tickHalfLength), yTick)
+                    CGContextAddLineToPoint(context, (x0 + tickHalfLength), yTick)
+                    
+                    // label
+                    drawString("\(tick)", withAttributes: labelTextAttributes, horizontalAlignment: .RightEdge(x0 - tickLabelOffset), verticalAlignment: .Center(yTick))
                 }
             }
             
