@@ -36,6 +36,7 @@
 /* Begin PBXFileReference section */
 		22294889E8A7EC7B96EF2A34 /* Pods-SwiftCalcTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SwiftCalcTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-SwiftCalcTests/Pods-SwiftCalcTests.debug.xcconfig"; sourceTree = "<group>"; };
 		3A1980BF1D7F5A5C00D9D6B0 /* Doubles.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = Doubles.playground; sourceTree = "<group>"; };
+		3A1980C01D7FA2D600D9D6B0 /* CalculatorPlayground.playground */ = {isa = PBXFileReference; lastKnownFileType = file.playground; path = CalculatorPlayground.playground; sourceTree = "<group>"; };
 		3A3834D61C0150250003468D /* RPNCalculatorUnitTest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RPNCalculatorUnitTest.swift; sourceTree = "<group>"; };
 		3A3E87E11C4C70F400B5E90A /* GraphViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GraphViewController.swift; sourceTree = "<group>"; };
 		3A3E87E31C4C711E00B5E90A /* GraphView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GraphView.swift; sourceTree = "<group>"; };
@@ -73,6 +74,7 @@
 		3AE935561B24B52D00395894 = {
 			isa = PBXGroup;
 			children = (
+				3A1980C01D7FA2D600D9D6B0 /* CalculatorPlayground.playground */,
 				3A1980BF1D7F5A5C00D9D6B0 /* Doubles.playground */,
 				3AEDAC341C1F0B2200199305 /* en.lproj */,
 				3AD59A3C1C0A1E5600C86FF8 /* README.md */,
