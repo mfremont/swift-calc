@@ -87,3 +87,16 @@ evaluation and those errors are reported with the `evaluationErrors` attribute.
 Errors are reported in the UI by the `CalculatorController.displayValue` setter. If the new value
 is `nil` then the top-most error in the `evaluationErrors` is used to lookup a localized message
 using `NSLocalizedString(key:comment)` and the main display is updated with the message.
+
+### Assignment 3
+
+#### Layout for iPad and iPhone 6+ landscape
+
+The calculator is not yet embedded in a Split View Controller for side-by-side viewing
+of the calculator and the graph when viewing in landscape on an iPad or iPhone 6+.
+
+#### Size-class adaptions
+
+Size class-specific layouts are not yet implemented. An improvement would be to implement layouts
+that are optimized for vertical compact (landscape on phones) and horizontal regular (portrait on
+iPads).
