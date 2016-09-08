@@ -1,22 +1,28 @@
 # SwiftCalc iOS app
 
-This is the Calculator app I developing using Swift 2.1 and Xcode 7.1 for the assignments of the
+This calculator app is based on the assignments from the
 iTunes U course
 [Developing iOS 8 Apps with Swift](https://itunes.apple.com/us/course/developing-ios-8-apps-swift/id961180099).
 
-This project also serves as a means of exploring tools and techniques for applying TDD to iOS 
-development with Swift. It utilizes test cases written with [Quick/Nimble](https://github.com/Quick/Quick)
-as well as XCTest.
+I've also used this project as a means of exploring tools and techniques for applying TDD to iOS 
+development with Swift. The unit tests for `CalculatorController` are written in the spec style with
+[Quick and Nimble](https://github.com/Quick/Quick) and can be found in
+`SwiftCalcTests/CalculatorControllerSpec.swift`. Most of the other unit tests are implemented
+as `XCTestCase` subclasses but make use of Nimble matchers to express the expectations.
 
 ## Build
 
-[CocoaPods](https://cocoapods.org) is utilized to manage dependenies on non-core frameworks and libraries.
-These dependencies must be downloaded and installed in the project _before_ building with Xcode:
+As of September 2016, I've been using Xcode 7.3.1 to build the app and run the test suites. Earlier versions
+of Xcode 7 may also work, but I haven't tried that in a while. I've also been able to build the app
+and run the test cases with Xcode 8.0 beta 6 after running the conversion to Swift 2.3.
 
-1. Intall version 0.36 or later, either as a ruby gem or with `brew install Caskroom/cask/cocoapods`.
-2. run `pod install` from this directory (which contains `SwiftCalc.xcworkspace`)
+The dependencies on Quick and Nimble are manged using [CocoaPods](https://cocoapods.org). CocoaPods must be
+installed and the dependencies downloaded _before_ building with Xcode:
 
-Now, you should be able to build the app and run tests in Xcode.
+1. Install version `brew install cocoapods` or as a ruby gem (see the [Getting Started Guide](https://guides.cocoapods.org/using/getting-started.html for CocoaPods). Version 1.0 or later recommended.
+2. run `pod install` from the project root (directory which contains this README and `SwiftCalc.xcworkspace`)
+
+Now, you should be able to build the app and run the tests with Xcode.
 
 ## Behavior and design differences from iTunes U course assignments
 
@@ -81,4 +87,3 @@ evaluation and those errors are reported with the `evaluationErrors` attribute.
 Errors are reported in the UI by the `CalculatorController.displayValue` setter. If the new value
 is `nil` then the top-most error in the `evaluationErrors` is used to lookup a localized message
 using `NSLocalizedString(key:comment)` and the main display is updated with the message.
-
